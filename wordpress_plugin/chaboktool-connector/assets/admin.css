@@ -1,0 +1,47 @@
+.chaboktool-module-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+    background: #fff;
+}
+
+.chaboktool-form-group {
+    margin: 10px 0;
+}
+
+.chaboktool-form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.chaboktool-form-group input,
+.chaboktool-form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.status.active {
+    background: #46b450;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+#chaboktool-comment-scheduler {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.scheduled-comment {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 3px;
+}
