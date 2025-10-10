@@ -1,0 +1,31 @@
+{% extends 'layout/layout.html' %}
+{% load static %}
+
+{% block title %}Keyword Research{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-2 text-gray-800">Keyword Research Tool</h1>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="file" class="form-label">فایل CSV یا XLSX را انتخاب کنید:</label>
+                    <input type="file" class="form-control" id="file" name="file" accept=".csv,.xlsx" required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">توصیف مختصر حوزه (متاباکس):</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" placeholder="مثال: حوزه سئو و بازاریابی دیجیتال"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">تحقیق کلمات کلیدی</button>
+            </form>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} mt-3">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

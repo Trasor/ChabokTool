@@ -1,0 +1,23 @@
+<!-- meta tags and other links -->
+<!DOCTYPE html>
+<html lang="fa" data-theme="light" dir="rtl">
+  {% include "../partials/head.html"%}
+  <body>
+    {% include "../partials/sidebar.html" %}
+    <main class="dashboard-main">
+      {% include "../partials/navbar.html" %}
+        <div class="dashboard-main-body">
+            {% include "../partials/breadcrumb.html" with title=title subTitle=subTitle %}
+                {% block content %}
+                {% endblock %}
+        </div>
+      {% include "../partials/footer.html" %}
+    </main>
+    {% include "../partials/scripts.html" %} {% block script %} {% endblock %}
+    <style>
+      body { direction: rtl; text-align: right; }
+      .sidebar { left: auto; right: 0; }
+      .navbar { left: auto; right: 250px; }
+    </style>
+  </body>
+</html>
