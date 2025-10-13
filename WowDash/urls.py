@@ -35,7 +35,7 @@ from WowDash import users_views
 from django.urls import include, path
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('', authentication_views.signin, name='home'),
     # home routes
     path('', home_views.index),
     path('index', home_views.index, name='index'),
@@ -67,6 +67,7 @@ urlpatterns = [
     # authentication routes
     path('authentication/forgot-password', authentication_views.forgotPassword, name='forgotPassword'),
     path('authentication/signin', authentication_views.signin, name='signin'),
+    path('authentication/signout', authentication_views.signout, name='signout'),
     path('authentication/signup', authentication_views.signup, name='signup'),
     # blog routes
     path('blog/add-blog', blog_views.addBlog, name='addBlog'),
@@ -144,5 +145,10 @@ urlpatterns = [
     path('users/view-profile', users_views.viewProfile, name='viewProfile'),
     # keyword research routes
     path('keyword/', include('keyword_research.urls')),
+        # keyword research routes
+    path('keyword/', include('keyword_research.urls')),
+    
+    # Login/Logout URLs
+    path('accounts/login/', authentication_views.signin, name='login'),
 ]
 

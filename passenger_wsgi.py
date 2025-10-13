@@ -1,0 +1,1 @@
+from WowDash.wsgi import application

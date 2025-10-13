@@ -17,19 +17,35 @@
                 <h4 class="mb-12">Sign In to your Account</h4>
                 <p class="mb-32 text-secondary-light text-lg">Welcome back! please enter your detail</p>
             </div>
-            <form action="#">
+                  <form action="{% url 'signin' %}" method="POST">
+                {% csrf_token %}
+                
+                <!-- Error Messages - بالای فرم -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-danger alert-dismissible fade show mb-24" role="alert">
+                            <strong>خطا!</strong> {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <div class="icon-field mb-16">
+                
                 <div class="icon-field mb-16">
                     <span class="icon top-50 translate-middle-y">
                         <iconify-icon icon="mage:email"></iconify-icon>
                     </span>
-                    <input type="email" class="form-control h-56-px bg-neutral-50 radius-12" placeholder="Email">
+                    <input type="text" name="username" class="form-control h-56-px bg-neutral-50 radius-12" placeholder="Username or Email" required>
+
                 </div>
                 <div class="position-relative mb-20">
                     <div class="icon-field">
                         <span class="icon top-50 translate-middle-y">
                             <iconify-icon icon="solar:lock-password-outline"></iconify-icon>
                         </span>
-                        <input type="password" class="form-control h-56-px bg-neutral-50 radius-12" id="your-password" placeholder="Password">
+                        <input type="password" name="password" class="form-control h-56-px bg-neutral-50 radius-12" id="your-password" placeholder="Password" required>
+
                     </div>
                     <span class="toggle-password ri-eye-line cursor-pointer position-absolute end-0 top-50 translate-middle-y me-16 text-secondary-light" data-toggle="#your-password"></span>
                 </div>
@@ -61,7 +77,7 @@
                 <div class="mt-32 text-center text-sm">
                     <p class="mb-0">Don’t have an account? <a href="{% url 'signup' %}" class="text-primary-600 fw-semibold">Sign Up</a></p>
                 </div>
-
+    
             </form>
         </div>
     </div>

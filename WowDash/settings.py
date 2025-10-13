@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-y9+u@w))$2g_mqgif#vknt$reo$o!p#h3!r4gyq!=i4s!#cxiw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['dncbot.ir', '178.239.147.121', 'www.dncbot.ir', '*']
 
 
 # Application definition
@@ -140,3 +140,12 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 
 MEDIA_ROOT = BASE_DIR / 'media'
+import os
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Login Settings
+LOGIN_URL = 'signin'
+LOGIN_REDIRECT_URL = 'index'
+LOGOUT_REDIRECT_URL = 'signin'
