@@ -186,3 +186,8 @@ Not Found: /logout
 Not Found: /favicon.ico
 Not Found: /favicon.ico
 Not Found: /robots.txt
+Not Found: /favicon.ico
+[UID:1088][2135667] Child process with pid: 2147228 was killed by signal: 15, core dumped: no
+Not Found: /robots.txt
+Not Found: /payment/index.php
+[UID:1088][2184935] Child process with pid: 2184939 was killed by signal: 15, core dumped: no
