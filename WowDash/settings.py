@@ -105,6 +105,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # API Tokens (از .env فایل)
 APIFY_TOKEN = config('APIFY_TOKEN')
 
+
+# Celery Configuration
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = None  # بدون محدودیت! ⬅️ مهم!
+CELERY_TASK_SOFT_TIME_LIMIT = None  # بدون محدودیت
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 1  # هر task یه worker جدید
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+
 # Login Settings
 LOGIN_URL = 'signin'
 LOGIN_REDIRECT_URL = 'index'
