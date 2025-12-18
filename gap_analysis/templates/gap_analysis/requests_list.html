@@ -1,0 +1,110 @@
+{% extends 'layout/layout.html' %}
+{% load static %}
+{% load jalali_filters %}
+
+{% block title %}لیست درخواست‌های گپ رقبا{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">🎯 لیست درخواست‌های گپ رقبا</h5>
+                    <a href="{% url 'gap_analysis' %}" class="btn btn-sm btn-success">
+                        ➕ افزودن درخواست جدید
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>نام درخواست</th>
+                                    <th>تاریخ ایجاد</th>
+                                    <th>وضعیت</th>
+                                    <th>مدت زمان</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for req in requests %}
+                                <tr>
+                                    <td><strong>{{ req.name }}</strong></td>
+                                    <td>
+                                        {{ req.created_date|jalali_date }}
+                                        <br>
+                                        <small class="text-muted">{{ req.created_date|jalali_time }}</small>
+                                    </td>
+                                    <td>
+                                        {% if req.status == 'pending' %}
+                                            <span class="badge bg-secondary">⏳ در انتظار</span>
+                                        {% elif req.status == 'running' %}
+                                            <span class="badge bg-primary">
+                                                <span class="spinner-border spinner-border-sm me-1"></span>
+                                                در حال پردازش
+                                            </span>
+                                        {% elif req.status == 'completed' %}
+                                            <span class="badge bg-success">✅ تکمیل شده</span>
+                                        {% elif req.status == 'failed' %}
+                                            <span class="badge bg-danger">❌ ناموفق</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if req.duration and req.duration != "-" %}
+                                            <span class="text-muted">⏱️ {{ req.duration }}</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="{% url 'gap_request_detail' req.id %}" 
+                                               class="btn btn-sm btn-primary btn-action">
+                                                👁️ مشاهده
+                                            </a>
+                                            
+                                            {% if req.status == 'completed' %}
+                                            <a href="{% url 'gap_request_detail' req.id %}?download=1" 
+                                               class="btn btn-sm btn-success btn-action">
+                                                📥 دانلود
+                                            </a>
+                                            {% endif %}
+                                            
+                                            <a href="{% url 'delete_gap_request' req.id %}" 
+                                               class="btn btn-sm btn-danger btn-action"
+                                               onclick="return confirm('{% if req.status == 'running' or req.status == 'pending' %}⚠️ این درخواست در حال انجام است. آیا می‌خواهید آن را متوقف و حذف کنید؟{% else %}آیا از حذف این درخواست اطمینان دارید؟{% endif %}')">
+                                                🗑️ حذف
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5">
+                                        <div style="font-size: 3rem; margin-bottom: 16px;">📭</div>
+                                        <p class="text-muted">هیچ درخواستی وجود ندارد</p>
+                                        <a href="{% url 'gap_analysis' %}" class="btn btn-primary mt-2">
+                                            ➕ اولین درخواست را ایجاد کنید
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

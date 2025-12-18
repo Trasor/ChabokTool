@@ -1,0 +1,45 @@
+{% extends 'layout/layout.html' %}
+{% load static %}
+
+{% block title %}ابزار گپ رقبا{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-2 text-gray-800">ابزار گپ رقبا (Gap Analysis)</h1>
+            <p class="text-muted">بررسی حضور رقبا در نتایج جستجوی کلمات کلیدی</p>
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="file" class="form-label">فایل CSV یا XLSX را انتخاب کنید:</label>
+                    <input type="file" class="form-control" id="file" name="file" accept=".csv,.xlsx" required>
+                    <div class="form-text">
+                        <strong>فرمت فایل (3 ستون):</strong><br>
+                        • ستون A: دامنه رقبا (مثال: digikala.com)<br>
+                        • ستون B: کلمات کلیدی (مثال: خرید موتور برق)<br>
+                        • ستون C: اسم برند رقبا (مثال: دیجی‌کالا)
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="description" class="form-label">توضیحات (اختیاری):</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" placeholder="مثال: تحلیل گپ رقبا برای حوزه موتور برق"></textarea>
+                    <div class="form-text">3 کلمه اول به عنوان نام درخواست ذخیره می‌شود</div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> شروع تحلیل گپ
+                </button>
+            </form>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} mt-3">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

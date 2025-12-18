@@ -1,0 +1,77 @@
+{% extends 'layout/layout.html' %}
+{% load static %}
+
+{% block title %}تحقیق کلمات کلیدی{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4 text-gray-800">تحقیق کلمات کلیدی</h1>
+            
+            <!-- ✅ راهنمای فایل -->
+            <div class="alert alert-info">
+                <strong>📥 راهنمای استفاده:</strong>
+                <ul class="mb-2">
+                    <li>فایل باید حداکثر 3 ستون داشته باشد</li>
+                    <li>ستون اول: Keyword (اجباری)</li>
+                    <li>ستون دوم: Search Volume (اختیاری، خالی = 0)</li>
+                    <li>ستون سوم: Word Count (اختیاری)</li>
+                </ul>
+                <a href="{% url 'download_sample_file' %}" class="btn btn-sm btn-success">
+                    📄 دانلود فایل نمونه
+                </a>
+            </div>
+            
+            <!-- فرم آپلود -->
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="file" class="form-label">فایل کلمات کلیدی (CSV یا XLSX)</label>
+                            <input type="file" class="form-control" id="file" name="file" accept=".csv,.xlsx" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">توضیحات (اختیاری)</label>
+                            <input type="text" class="form-control" id="description" name="description" 
+                                   placeholder="مثال: تحقیق کلمات پت شاپ">
+                        </div>
+                        
+                        <!-- ✅ Checkbox تحلیل هوشمند -->
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="ai_analysis" name="ai_analysis">
+                            <label class="form-check-label" for="ai_analysis">
+                                <strong>🤖 تحلیل هوشمند Search Intent</strong>
+                                <small class="text-muted d-block">
+                                    با استفاده از هوش مصنوعی، Search Intent و Intent Mapping هر کلمه کلیدی تحلیل می‌شود.
+                                    <br>
+                                    ⏱️ زمان پردازش: +4-7 دقیقه برای هر 100 کلمه
+                                    <br>
+                                    💰 هزینه اضافی: رایگان (تا 1500 کلمه در روز)
+                                </small>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> ارسال و شروع پردازش
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="alert alert-warning">
+                <strong>⚠️ توجه:</strong>
+                <ul class="mb-0">
+                    <li>هر سطر از فایل = 1 کوئری</li>
+                    <li>قبل از ارسال، موجودی کافی داشته باشید</li>
+                    <li>پردازش ممکن است چند دقیقه طول بکشد</li>
+                    <li>تحلیل هوشمند فقط برای کلمات PKW انجام می‌شود</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

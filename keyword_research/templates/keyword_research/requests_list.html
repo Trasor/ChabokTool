@@ -1,0 +1,188 @@
+{% extends 'layout/layout.html' %}
+{% load static %}
+{% load jalali_filters %} 
+
+{% block title %}لیست درخواست‌ها{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">📊 لیست درخواست‌های کیوورد ریسرچ</h5>
+                    <a href="{% url 'keyword_research' %}" class="btn btn-sm btn-success">
+                        ➕ افزودن درخواست جدید
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>نام درخواست</th>
+                                    <th>تاریخ ایجاد</th>
+                                    <th>وضعیت</th>
+                                    <th>مدت زمان</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for req in requests %}
+                                <tr data-status="{{ req.status }}">
+                                    <td><strong>{{ req.name }}</strong></td>
+                                    <td>
+                                        {{ req.created_date|jalali_date }}
+                                        <br>
+                                        <small class="text-muted">{{ req.created_date|jalali_time }}</small>
+                                    </td>
+                                    <td>
+                                        {% if req.status == 'pending' %}
+                                            <span class="badge bg-secondary">⏳ در انتظار</span>
+                                        {% elif req.status == 'running' %}
+                                            <span class="badge bg-primary">
+                                                <span class="spinner-border spinner-border-sm me-1"></span>
+                                                در حال پردازش
+                                            </span>
+                                        {% elif req.status == 'completed' %}
+                                            <span class="badge bg-success">✅ تکمیل شده</span>
+                                        {% elif req.status == 'failed' %}
+                                            <span class="badge bg-danger">❌ ناموفق</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if req.duration and req.duration != "-" %}
+                                            <span class="text-muted">⏱️ {{ req.duration }}</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="{% url 'request_detail' req.id %}" 
+                                               class="btn btn-sm btn-primary btn-action"
+                                               title="مشاهده جزئیات">
+                                                👁️ مشاهده
+                                            </a>
+                                            
+                                            {% if req.status == 'completed' %}
+                                            <a href="{% url 'request_detail' req.id %}?download=1" 
+                                               class="btn btn-sm btn-success btn-action"
+                                               title="دانلود اکسل">
+                                                📥 دانلود
+                                            </a>
+                                            {% endif %}
+                                            
+                                            <a href="{% url 'delete_request' req.id %}" 
+                                               class="btn btn-sm btn-danger btn-action"
+                                               onclick="return confirm('{% if req.status == 'running' or req.status == 'pending' %}⚠️ این درخواست در حال انجام است. آیا می‌خواهید آن را متوقف و حذف کنید؟{% else %}آیا از حذف این درخواست اطمینان دارید؟{% endif %}')"
+                                               title="حذف درخواست">
+                                                🗑️ حذف
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5">
+                                        <div style="font-size: 3rem; margin-bottom: 16px;">📭</div>
+                                        <p class="text-muted">هیچ درخواستی وجود ندارد</p>
+                                        <a href="{% url 'keyword_research' %}" class="btn btn-primary mt-2">
+                                            ➕ اولین درخواست را ایجاد کنید
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let checkInterval = null;
+    let hasRunningTasks = false;
+    
+    checkRunningTasks();
+    
+    function checkRunningTasks() {
+        const runningRows = document.querySelectorAll('tr[data-status="running"]');
+        hasRunningTasks = runningRows.length > 0;
+        
+        if (hasRunningTasks && !checkInterval) {
+            console.log('📡 Starting status check (every 5s)');
+            checkInterval = setInterval(checkStatus, 5000);
+        } else if (!hasRunningTasks && checkInterval) {
+            console.log('🛑 Stopping status check');
+            clearInterval(checkInterval);
+            checkInterval = null;
+        }
+    }
+    
+    function checkStatus() {
+        fetch('/keyword-research/check-status/')
+            .then(response => response.json())
+            .then(data => {
+                console.log('📊 Status:', data);
+                
+                if (data.completed.length > 0) {
+                    const lastCompleted = data.completed[0];
+                    
+                    showNotification(
+                        lastCompleted.status,
+                        lastCompleted.status === 'completed' 
+                            ? '✅ درخواست شما تکمیل شد!' 
+                            : '❌ خطا در پردازش: ' + (lastCompleted.error_message || 'Unknown')
+                    );
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                }
+                
+                if (data.running.length === 0) {
+                    clearInterval(checkInterval);
+                    checkInterval = null;
+                    console.log('✅ All tasks completed');
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error checking status:', error);
+            });
+    }
+    
+    function showNotification(status, message) {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${status === 'completed' ? 'success' : 'danger'} position-fixed top-0 end-0 m-3`;
+        toast.style.zIndex = '9999';
+        toast.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas fa-${status === 'completed' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+                <div>${message}</div>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+});
+</script>
+{% endblock %}

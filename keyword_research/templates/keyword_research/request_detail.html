@@ -1,0 +1,133 @@
+{% extends 'layout/layout.html' %}
+{% load static %}
+{% load jalali_filters %}
+
+{% block title %}جزئیات درخواست {{ req.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-2 text-gray-800">جزئیات درخواست: {{ req.name }}</h1>
+            
+            <p>تاریخ ایجاد: {{ req.created_date|jalali_datetime }}</p>
+            <p>وضعیت: 
+                {% if req.status == 'pending' %}
+                    <span class="badge bg-secondary">در انتظار</span>
+                {% elif req.status == 'running' %}
+                    <span class="badge bg-primary">در حال پردازش...</span>
+                {% elif req.status == 'completed' %}
+                    <span class="badge bg-success">✅ تکمیل شده</span>
+                    {% if req.duration %}
+                        <small>({{ req.duration }})</small>
+                    {% endif %}
+                {% elif req.status == 'failed' %}
+                    <span class="badge bg-danger">❌ ناموفق</span>
+                {% endif %}
+            </p>
+            
+            <!-- ✅ نمایش وضعیت AI -->
+            {% if req.ai_analysis_enabled %}
+            <p>
+                <span class="badge bg-info">🤖 تحلیل هوشمند فعال</span>
+            </p>
+            {% endif %}
+            
+            <a href="?download=1" class="btn btn-success mb-3">
+                📥 دانلود اکسل خروجی
+            </a>
+            
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-sm">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>PKW</th>
+                            <th>Search Volume</th>
+                            <th>AKW</th>
+                            <th>Keywords</th>
+                            <th>Word Count</th>
+                            <!-- ✅ ستون‌های جدید -->
+                            {% if req.ai_analysis_enabled %}
+                            <th>Search Intent</th>
+                            <th>Intent Mapping</th>
+                            {% endif %}
+                            <th>Links</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for kw in keywords %}
+                        <tr class="table-success">
+                            <td><strong>{{ kw.keyword }}</strong></td>
+                            <td>{{ kw.search_volume|floatformat:0 }}</td>
+                            <td>
+                                {% if kw.akw_str %}
+                                    {% load custom_filters %}
+                                    {{ kw.akw_str|get_top_akw }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if kw.akw_str %}
+                                    <small class="text-muted">
+                                        {% load custom_filters %}
+                                        {{ kw.akw_str|get_keywords_without_akw|truncatechars:50 }}
+                                    </small>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if kw.word_count %}
+                                    {{ kw.word_count }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- ✅ نمایش AI Results -->
+                            {% if req.ai_analysis_enabled %}
+                            <td>
+                                {% if kw.search_intent %}
+                                    <span class="badge bg-primary">{{ kw.search_intent }}</span>
+                                {% else %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if kw.intent_mapping %}
+                                    <span class="badge bg-secondary">{{ kw.intent_mapping }}</span>
+                                {% else %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                            {% endif %}
+                            
+                            <td><small>{{ kw.links|truncatechars:40 }}</small></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="{% if req.ai_analysis_enabled %}9{% else %}7{% endif %}" class="text-center">
+                                هیچ کیووردی وجود ندارد.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="alert alert-info mt-3">
+                <strong>📌 توضیحات فایل خروجی:</strong>
+                <ul class="mb-0">
+                    <li><strong>تب Keywords:</strong> PKW, Search Volume, AKW, Keywords, Word Count, Links
+                        {% if req.ai_analysis_enabled %}, Search Intent, Intent Mapping, Meta Titles{% endif %}
+                    </li>
+                    <li><strong>تب رقبا:</strong> 10 سایت برتر + تعداد تکرار</li>
+                </ul>
+            </div>
+            
+            <a href="{% url 'requests_list' %}" class="btn btn-secondary">بازگشت به لیست</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

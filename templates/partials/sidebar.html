@@ -1,0 +1,133 @@
+<aside class="sidebar">
+    <button type="button" class="sidebar-close-btn">
+        <iconify-icon icon="radix-icons:cross-2"></iconify-icon>
+    </button>
+    <div>
+        <a href="{% url 'index' %}" class="sidebar-logo">
+            <img src="/static/images/logo.png" alt="site logo" class="light-logo">
+            <img src="/static/images/logo-light.png" alt="site logo" class="dark-logo">
+            <img src="/static/images/logo-icon.png" alt="site logo" class="logo-icon">
+        </a>
+    </div>
+    <div class="sidebar-menu-area">
+        <ul class="sidebar-menu" id="sidebar-menu">
+            
+            <!-- داشبورد -->
+            <li>
+                <a href="{% url 'index' %}">
+                    <iconify-icon icon="solar:home-smile-angle-outline" class="menu-icon"></iconify-icon>
+                    <span>داشبورد</span>
+                </a>
+            </li>
+
+            <li class="sidebar-menu-group-title">ابزارهای SEO</li>
+
+            <!-- کیوورد ریسرچ -->
+            <li class="dropdown">
+                <a href="javascript:void(0)">
+                    <iconify-icon icon="carbon:search" class="menu-icon"></iconify-icon>
+                    <span>کیوورد ریسرچ</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li>
+                        <a href="{% url 'requests_list' %}">
+                            <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i> 
+                            لیست درخواست‌ها
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'keyword_research' %}">
+                            <i class="ri-circle-fill circle-icon text-success-main w-auto"></i> 
+                            افزودن درخواست جدید
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- گپ رقبا -->
+            <li class="dropdown">
+                <a href="javascript:void(0)">
+                    <iconify-icon icon="mdi:chart-timeline-variant" class="menu-icon"></iconify-icon>
+                    <span>گپ رقبا</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li>
+                        <a href="{% url 'gap_requests_list' %}">
+                            <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i> 
+                            لیست درخواست‌ها
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'gap_analysis' %}">
+                            <i class="ri-circle-fill circle-icon text-success-main w-auto"></i> 
+                            افزودن درخواست جدید
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="sidebar-menu-group-title">مالی</li>
+
+            <!-- مالی (بدون لینک مستقیم) -->
+            <li class="dropdown">
+                <a href="javascript:void(0)">
+                    <iconify-icon icon="solar:wallet-money-outline" class="menu-icon"></iconify-icon>
+                    <span>مالی</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li>
+                          <a href="{% url 'transactions_list' %}">
+                            <i class="ri-circle-fill circle-icon text-warning-main w-auto"></i> 
+                            صورتحساب‌ها
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'buy_credit' %}">
+                            <i class="ri-circle-fill circle-icon text-info-main w-auto"></i> 
+                            خرید کردیت
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="sidebar-menu-group-title">تنظیمات</li>
+
+            <!-- تنظیمات -->
+            <li class="dropdown">
+                <a href="javascript:void(0)">
+                    <iconify-icon icon="icon-park-outline:setting-two" class="menu-icon"></iconify-icon>
+                    <span>تنظیمات</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li>
+                        <a href="{% url 'company' %}">
+                            <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i> 
+                            شرکت
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'notification' %}">
+                            <i class="ri-circle-fill circle-icon text-warning-main w-auto"></i> 
+                            اعلان‌ها
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'theme' %}">
+                            <i class="ri-circle-fill circle-icon text-danger-main w-auto"></i> 
+                            تم
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- خروج -->
+            <li>
+                <a href="{% url 'signout' %}">
+                    <iconify-icon icon="lucide:power" class="menu-icon"></iconify-icon>
+                    <span>خروج</span>
+                </a>
+            </li>
+
+        </ul>
+    </div>
+</aside>
