@@ -1,11 +1,11 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.utils import timezone
 
 
 class UserCredit(models.Model):
     """موجودی کردیت کاربر"""
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='credit')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='credit')
     balance = models.IntegerField(default=0)  # تعداد کردیت
     last_updated = models.DateTimeField(auto_now=True)
     
@@ -26,7 +26,7 @@ class Transaction(models.Model):
         ('cancelled', 'لغو شده'),
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transactions')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='transactions')
     credit_amount = models.IntegerField()  # تعداد کردیت
     price = models.IntegerField()  # قیمت به تومان
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
