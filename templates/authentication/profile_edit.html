@@ -1,0 +1,125 @@
+{% extends '../layout/layout.html' %}
+
+{% block content %}
+<div class="dashboard-main-body">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <h6 class="fw-semibold mb-0">ویرایش پروفایل</h6>
+        <ul class="d-flex align-items-center gap-2">
+            <li class="fw-medium">
+                <a href="{% url 'index' %}" class="d-flex align-items-center gap-1 hover-text-primary">
+                    <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
+                    داشبورد
+                </a>
+            </li>
+            <li>-</li>
+            <li class="fw-medium">ویرایش پروفایل</li>
+        </ul>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row gy-4">
+        <!-- ویرایش اطلاعات -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">اطلاعات شخصی</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="row gy-3">
+                            <div class="col-md-6">
+                                <label class="form-label">نام</label>
+                                {{ form.first_name }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">نام خانوادگی</label>
+                                {{ form.last_name }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">شماره تلفن</label>
+                                {{ form.phone_number }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">ایمیل (غیرقابل تغییر)</label>
+                                <input type="email" class="form-control h-56-px bg-neutral-50 radius-12" value="{{ user.email }}" disabled>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">عکس پروفایل</label>
+                                {{ form.profile_picture }}
+                                {% if user.profile_picture %}
+                                    <div class="mt-2">
+                                        <img src="{{ user.profile_picture.url }}" alt="Profile" class="rounded" style="max-width: 150px;">
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-center gap-3 mt-24">
+                            <button type="submit" class="btn btn-primary px-20 py-11 radius-8">
+                                ذخیره تغییرات
+                            </button>
+                            <a href="{% url 'index' %}" class="btn btn-outline-secondary px-20 py-11 radius-8">
+                                لغو
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- تغییر رمز عبور -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">امنیت</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p class="text-secondary-light mb-2">
+                            <iconify-icon icon="mdi:shield-check" class="text-success-600"></iconify-icon>
+                            حساب شما ایمن است
+                        </p>
+                    </div>
+
+                    <a href="{% url 'accounts:change_password' %}" class="btn btn-outline-primary w-100 py-11 radius-8">
+                        <iconify-icon icon="mdi:lock-reset"></iconify-icon>
+                        تغییر رمز عبور
+                    </a>
+
+                    <div class="mt-24">
+                        <p class="text-sm text-secondary-light mb-1">
+                            <strong>نام کاربری:</strong> {{ user.username }}
+                        </p>
+                        <p class="text-sm text-secondary-light mb-1">
+                            <strong>عضویت از:</strong> {{ user.date_joined|date:"Y/m/d" }}
+                        </p>
+                        <p class="text-sm text-secondary-light">
+                            {% if user.is_phone_verified %}
+                                <iconify-icon icon="mdi:check-circle" class="text-success-600"></iconify-icon>
+                                شماره تایید شده
+                            {% else %}
+                                <iconify-icon icon="mdi:alert-circle" class="text-warning-600"></iconify-icon>
+                                شماره تایید نشده
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
