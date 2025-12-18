@@ -1,11 +1,11 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.utils import timezone
 
 
 class GapKeyword(models.Model):
     """مدل برای ذخیره کلمات و لینک‌های رقبا"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     request = models.ForeignKey('GapRequest', on_delete=models.CASCADE, related_name='keywords')
     keyword = models.CharField(max_length=500)  # کلمه کلیدی
     competitor = models.CharField(max_length=255)  # دامنه رقیب
@@ -27,7 +27,7 @@ class GapRequest(models.Model):
         ('failed', 'ناموفق'),
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)  # 3 کلمه اول توضیحات + "..."
     description = models.TextField(blank=True)  # توضیحات کامل کاربر
     created_date = models.DateTimeField(default=timezone.now)

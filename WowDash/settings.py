@@ -25,10 +25,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Apps
+    'accounts',
     'keyword_research',
     'gap_analysis',
     'billing',
+    # Third-party
     'channels',
+    'defender',
 ]
 
 MIDDLEWARE = [
@@ -39,6 +43,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'defender.middleware.FailedLoginMiddleware',  # محافظت از brute force
 ]
 
 ROOT_URLCONF = 'WowDash.urls'
@@ -165,6 +170,109 @@ CHANNEL_LAYERS = {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
             "hosts": [(config('REDIS_HOST', default='localhost'), config('REDIS_PORT', default=6379, cast=int))],
+        },
+    },
+}
+
+# ========================================
+# 🔒 SECURITY SETTINGS - OWASP Compliant
+# ========================================
+
+# Custom User Model
+AUTH_USER_MODEL = 'accounts.User'
+
+# Password Hashing - استفاده از Argon2 (قوی‌ترین)
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+]
+
+# Session Security - 1 Hour Inactivity Timeout
+SESSION_COOKIE_AGE = 3600  # 1 hour in seconds
+SESSION_SAVE_EVERY_REQUEST = True  # برای refresh کردن session در هر request
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_SECURE = not DEBUG  # فقط HTTPS در production
+SESSION_COOKIE_HTTPONLY = True  # جلوگیری از XSS
+SESSION_COOKIE_SAMESITE = 'Lax'  # محافظت از CSRF
+
+# CSRF Protection
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_AGE = 31449600  # 1 year
+
+# Security Headers (OWASP Recommended)
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+# HTTPS Settings (فقط در production)
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+# Django Defender Settings (Brute Force Protection)
+DEFENDER_LOGIN_FAILURE_LIMIT = 5  # بعد از 5 بار تلاش ناموفق
+DEFENDER_COOLOFF_TIME = 900  # 15 دقیقه مسدود (900 seconds)
+DEFENDER_LOCKOUT_TEMPLATE = 'authentication/lockout.html'
+DEFENDER_REDIS_URL = config('CELERY_BROKER_URL', default='redis://127.0.0.1:6379/0')
+DEFENDER_STORE_ACCESS_ATTEMPTS = True
+DEFENDER_USE_CELERY = False
+DEFENDER_LOCK_OUT_BY_IP_AND_USERNAME = True
+
+# Meli Payamak SMS Configuration
+MELIPAYAMAK_API_KEY = config('MELIPAYAMAK_API_KEY', default='')
+MELIPAYAMAK_PATTERN_CODE = config('MELIPAYAMAK_PATTERN_CODE', default='')
+MELIPAYAMAK_SENDER_NUMBER = config('MELIPAYAMAK_SENDER_NUMBER', default='')
+
+# reCAPTCHA Configuration
+RECAPTCHA_SITE_KEY = config('RECAPTCHA_SITE_KEY', default='')
+RECAPTCHA_SECRET_KEY = config('RECAPTCHA_SECRET_KEY', default='')
+RECAPTCHA_VERIFY_URL = 'https://www.google.com/recaptcha/api/siteverify'
+
+# Logging Configuration (برای نظارت امنیتی)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'WARNING',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'security.log',
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django.security': {
+            'handlers': ['file', 'console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'accounts': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'defender': {
+            'handlers': ['file', 'console'],
+            'level': 'WARNING',
+            'propagate': False,
         },
     },
 }

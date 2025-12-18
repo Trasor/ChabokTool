@@ -1,0 +1,80 @@
+{% extends '../layout/layout2.html' %}
+
+{% block content %}
+<section class="auth bg-base d-flex flex-wrap">
+    <div class="auth-left d-lg-block d-none">
+        <div class="d-flex align-items-center flex-column h-100 justify-content-center">
+            <img src="/static/images/auth/auth-img.png" alt="">
+        </div>
+    </div>
+    <div class="auth-right py-32 px-24 d-flex flex-column justify-content-center">
+        <div class="max-w-464-px mx-auto w-100">
+            <div>
+                <a href="{% url 'index' %}" class="mb-40 max-w-290-px">
+                    <img src="/static/images/logo.png" alt="">
+                </a>
+                <h4 class="mb-12">تایید شماره تلفن</h4>
+                <p class="mb-32 text-secondary-light text-lg">
+                    کد تایید 6 رقمی به شماره <strong>{{ phone_number }}</strong> ارسال شد
+                </p>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show mb-24" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="mb-24">
+                    {{ form.otp_code }}
+                </div>
+
+                <button type="submit" class="btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-32">
+                    تایید کد
+                </button>
+
+                <div class="mt-24 text-center">
+                    <p class="text-secondary-light mb-2">کد را دریافت نکردید؟</p>
+                    <button type="button" id="resendBtn" class="btn btn-outline-primary text-sm btn-sm px-12 py-8 radius-12">
+                        ارسال مجدد کد
+                    </button>
+                    <p id="countdown" class="text-sm text-secondary-light mt-2"></p>
+                </div>
+
+                <div class="mt-32 text-center text-sm">
+                    <a href="{% url 'signup' %}" class="text-primary-600 fw-semibold">بازگشت به ثبت‌نام</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock content %}
+
+{% block script %}
+<script>
+// ارسال مجدد OTP
+document.getElementById('resendBtn').addEventListener('click', function() {
+    fetch('{% url "accounts:resend_otp" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+        } else {
+            alert(data.message);
+        }
+    });
+});
+</script>
+{% endblock %}

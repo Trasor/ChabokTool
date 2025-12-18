@@ -19,6 +19,7 @@ from django.urls import path, include
 from WowDash import ai_views
 from WowDash import authentication_views
 from WowDash import blog_views
+from accounts import views as accounts_views
 from WowDash import chart_views
 from WowDash import components_views
 from WowDash import cryptoCurrency_views
@@ -33,7 +34,7 @@ from WowDash import users_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', authentication_views.signin, name='home'),
+    path('', accounts_views.signin_view, name='home'),
     # home routes
     path('index', home_views.index, name='index'),
     path('blankpage', home_views.blankpage, name='blankpage'),
@@ -61,11 +62,12 @@ urlpatterns = [
     path('ai/text-generator-new', ai_views.textGeneratorNew, name='textGeneratorNew'),
     path('ai/video-generator', ai_views.videoGenerator, name='videoGenerator'),
     path('ai/voice-generator', ai_views.voiceGenerator, name='voiceGenerator'),
-    # authentication routes
-    path('authentication/forgot-password', authentication_views.forgotPassword, name='forgotPassword'),
-    path('authentication/signin', authentication_views.signin, name='signin'),
-    path('authentication/signout', authentication_views.signout, name='signout'),
-    path('authentication/signup', authentication_views.signup, name='signup'),
+    # authentication routes (new secure system)
+    path('accounts/', include('accounts.urls', namespace='accounts')),
+    path('authentication/signin', accounts_views.signin_view, name='signin'),
+    path('authentication/signout', accounts_views.signout_view, name='signout'),
+    path('authentication/signup', accounts_views.signup_view, name='signup'),
+    path('authentication/forgot-password', accounts_views.forgot_password_view, name='forgotPassword'),
     # blog routes
     path('blog/add-blog', blog_views.addBlog, name='addBlog'),
     path('blog/blog', blog_views.blog, name='blog'),
@@ -147,5 +149,5 @@ urlpatterns = [
     # billing routes ✅ جدید
     path('billing/', include('billing.urls')),
     # Login/Logout URLs
-    path('accounts/login/', authentication_views.signin, name='login'),
+    path('accounts/login/', accounts_views.signin_view, name='login'),
 ]

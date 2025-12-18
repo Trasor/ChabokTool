@@ -1,0 +1,41 @@
+{% extends '../layout/layout2.html' %}
+
+{% block content %}
+<section class="auth bg-base d-flex flex-wrap">
+    <div class="auth-left d-lg-block d-none">
+        <div class="d-flex align-items-center flex-column h-100 justify-content-center">
+            <img src="/static/images/auth/auth-img.png" alt="">
+        </div>
+    </div>
+    <div class="auth-right py-32 px-24 d-flex flex-column justify-content-center">
+        <div class="max-w-464-px mx-auto w-100 text-center">
+            <div>
+                <a href="{% url 'index' %}" class="mb-40 max-w-290-px d-inline-block">
+                    <img src="/static/images/logo.png" alt="">
+                </a>
+
+                <div class="mb-32">
+                    <iconify-icon icon="mdi:lock-alert" class="text-danger-600" style="font-size: 80px;"></iconify-icon>
+                </div>
+
+                <h4 class="mb-12 text-danger-600">دسترسی موقتاً مسدود شد</h4>
+                <p class="mb-24 text-secondary-light text-lg">
+                    به دلیل تلاش‌های ناموفق متعدد برای ورود، دسترسی شما به صورت موقت مسدود شده است.
+                </p>
+
+                <div class="alert alert-warning text-start mb-24" role="alert">
+                    <strong>⏱️ زمان باقیمانده:</strong> لطفاً ۱۵ دقیقه صبر کنید و دوباره تلاش کنید.
+                </div>
+
+                <p class="text-secondary-light mb-32">
+                    این اقدام امنیتی برای محافظت از حساب شما انجام شده است.
+                </p>
+
+                <a href="{% url 'index' %}" class="btn btn-primary text-sm btn-sm px-24 py-16 radius-12">
+                    بازگشت به صفحه اصلی
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
