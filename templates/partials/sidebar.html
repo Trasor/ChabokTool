@@ -92,6 +92,28 @@
 
             <li class="sidebar-menu-group-title">تنظیمات</li>
 
+            <!-- مدیریت حساب کاربری -->
+            <li class="dropdown">
+                <a href="javascript:void(0)">
+                    <iconify-icon icon="solar:user-circle-outline" class="menu-icon"></iconify-icon>
+                    <span>مدیریت حساب</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li>
+                        <a href="{% url 'accounts:profile_edit' %}">
+                            <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i>
+                            ویرایش پروفایل
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'accounts:change_password' %}">
+                            <i class="ri-circle-fill circle-icon text-warning-main w-auto"></i>
+                            تغییر رمز عبور
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
             <!-- تنظیمات -->
             <li class="dropdown">
                 <a href="javascript:void(0)">
@@ -101,19 +123,19 @@
                 <ul class="sidebar-submenu">
                     <li>
                         <a href="{% url 'company' %}">
-                            <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i> 
+                            <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i>
                             شرکت
                         </a>
                     </li>
                     <li>
                         <a href="{% url 'notification' %}">
-                            <i class="ri-circle-fill circle-icon text-warning-main w-auto"></i> 
+                            <i class="ri-circle-fill circle-icon text-warning-main w-auto"></i>
                             اعلان‌ها
                         </a>
                     </li>
                     <li>
                         <a href="{% url 'theme' %}">
-                            <i class="ri-circle-fill circle-icon text-danger-main w-auto"></i> 
+                            <i class="ri-circle-fill circle-icon text-danger-main w-auto"></i>
                             تم
                         </a>
                     </li>
@@ -122,7 +144,7 @@
 
             <!-- خروج -->
             <li>
-                <a href="{% url 'signout' %}">
+                <a href="{% url 'accounts:signout' %}">
                     <iconify-icon icon="lucide:power" class="menu-icon"></iconify-icon>
                     <span>خروج</span>
                 </a>
