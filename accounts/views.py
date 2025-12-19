@@ -54,40 +54,33 @@ def signup_view(request):
     if request.method == 'POST':
         form = SignupForm(request.POST, request.FILES)
         if form.is_valid():
-            # ذخیره اطلاعات در session برای بعد از تایید OTP
-            request.session['signup_data'] = {
-                'username': form.cleaned_data['username'],
-                'first_name': form.cleaned_data['first_name'],
-                'last_name': form.cleaned_data['last_name'],
-                'phone_number': form.cleaned_data['phone_number'],
-                'email': form.cleaned_data['email'],
-                'password': form.cleaned_data['password1'],
-            }
-
-            # ذخیره عکس در session (اگر وجود داشته باشد)
-            if form.cleaned_data.get('profile_picture'):
-                request.session['has_profile_picture'] = True
-                # عکس رو موقتاً save می‌کنیم
-                request.session['profile_picture_path'] = form.cleaned_data['profile_picture'].name
-
-            phone_number = form.cleaned_data['phone_number']
-
-            # بررسی امکان ارسال OTP جدید
-            can_request, remaining = OTPService.can_request_new_otp(phone_number)
-            if not can_request:
-                messages.error(
-                    request,
-                    f'لطفاً {remaining} ثانیه صبر کنید قبل از درخواست کد جدید'
+            try:
+                # ایجاد کاربر مستقیماً (بدون OTP - موقتاً)
+                user = User.objects.create_user(
+                    username=form.cleaned_data['username'],
+                    email=form.cleaned_data['email'],
+                    password=form.cleaned_data['password1'],
+                    first_name=form.cleaned_data['first_name'],
+                    last_name=form.cleaned_data['last_name'],
+                    phone_number=form.cleaned_data['phone_number'],
+                    is_phone_verified=True  # موقتاً True
                 )
-                return render(request, 'authentication/signup.html', {'form': form})
 
-            # ارسال OTP
-            otp = OTPService.create_otp(phone_number)
-            request.session['otp_phone'] = phone_number
+                # ذخیره عکس پروفایل
+                if form.cleaned_data.get('profile_picture'):
+                    user.profile_picture = form.cleaned_data['profile_picture']
+                    user.save()
 
-            logger.info(f"OTP sent to {phone_number}")
-            messages.success(request, f'کد تایید به شماره {phone_number} ارسال شد')
-            return redirect('verify_otp')
+                # ورود خودکار
+                login(request, user)
+
+                logger.info(f"User {user.username} registered successfully (without OTP)")
+                messages.success(request, 'ثبت‌نام با موفقیت انجام شد!')
+                return redirect('index')
+
+            except Exception as e:
+                logger.error(f"Error creating user: {str(e)}")
+                messages.error(request, f'خطا در ایجاد حساب کاربری: {str(e)}')
         else:
             for field, errors in form.errors.items():
                 for error in errors:
