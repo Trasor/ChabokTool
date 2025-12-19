@@ -18,6 +18,7 @@ class MeliPayamakService:
     BASE_URL = "https://console.melipayamak.com/api/send/shared/"
 
     def __init__(self):
+        self.username = settings.MELIPAYAMAK_USERNAME
         self.api_key = settings.MELIPAYAMAK_API_KEY
         self.sender_number = settings.MELIPAYAMAK_SENDER_NUMBER
         self.pattern_code = settings.MELIPAYAMAK_PATTERN_CODE
@@ -44,7 +45,7 @@ class MeliPayamakService:
 
             headers = {
                 "Content-Type": "application/json",
-                "Authorization": f"AccessKey {self.api_key}"
+                "Authorization": f"AccessKey {self.username}:{self.api_key}"
             }
 
             response = requests.post(url, json=payload, headers=headers, timeout=10)
