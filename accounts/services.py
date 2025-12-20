@@ -35,7 +35,8 @@ class MeliPayamakService:
             bool: موفقیت یا عدم موفقیت ارسال
         """
         try:
-            url = self.BASE_URL + self.pattern_code
+            # کلید در انتهای URL اضافه می‌شه
+            url = f"{self.BASE_URL}{self.pattern_code}/{self.api_key}"
 
             payload = {
                 "bodyId": self.pattern_code,
@@ -44,8 +45,7 @@ class MeliPayamakService:
             }
 
             headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"AccessKey {self.username}:{self.api_key}"
+                "Content-Type": "application/json"
             }
 
             response = requests.post(url, json=payload, headers=headers, timeout=10)
