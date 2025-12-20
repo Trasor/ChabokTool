@@ -1,7 +1,6 @@
 """
-سرویس‌های مربوط به OTP و ارسال پیامک با ملی پیامک
+سرویس‌های مربوط به OTP و ارسال پیامک با کاوه‌نگار
 """
-import requests
 import logging
 from datetime import timedelta
 from django.utils import timezone
@@ -11,21 +10,19 @@ from .models import OTPVerification
 logger = logging.getLogger(__name__)
 
 
-class MeliPayamakService:
+class KavenegarService:
     """
-    سرویس ارسال پیامک با API ملی پیامک
+    سرویس ارسال پیامک با API کاوه‌نگار
     """
-    BASE_URL = "https://console.melipayamak.com/api/send/shared/"
 
     def __init__(self):
-        self.username = settings.MELIPAYAMAK_USERNAME
-        self.api_key = settings.MELIPAYAMAK_API_KEY
-        self.sender_number = settings.MELIPAYAMAK_SENDER_NUMBER
-        self.pattern_code = settings.MELIPAYAMAK_PATTERN_CODE
+        self.api_key = settings.KAVENEGAR_API_KEY
+        self.template = settings.KAVENEGAR_TEMPLATE
+        self.sender = settings.KAVENEGAR_SENDER
 
     def send_otp(self, phone_number, otp_code):
         """
-        ارسال کد OTP به شماره تلفن از طریق پترن ملی پیامک
+        ارسال کد OTP به شماره تلفن از طریق template کاوه‌نگار
 
         Args:
             phone_number (str): شماره تلفن گیرنده
@@ -35,36 +32,32 @@ class MeliPayamakService:
             bool: موفقیت یا عدم موفقیت ارسال
         """
         try:
-            # کلید در انتهای URL اضافه می‌شه
-            url = f"{self.BASE_URL}{self.pattern_code}/{self.api_key}"
+            from kavenegar import KavenegarAPI, APIException, HTTPException
 
-            payload = {
-                "bodyId": self.pattern_code,
-                "to": phone_number,
-                "args": [otp_code]
+            api = KavenegarAPI(self.api_key)
+
+            params = {
+                'receptor': phone_number,
+                'template': self.template,
+                'token': str(otp_code),
+                'type': 'sms',
             }
 
-            headers = {
-                "Content-Type": "application/json"
-            }
+            response = api.verify_lookup(params)
+            logger.info(f"✓ OTP sent successfully to {phone_number}")
+            return True
 
-            response = requests.post(url, json=payload, headers=headers, timeout=10)
-
-            if response.status_code == 200:
-                logger.info(f"✓ OTP sent successfully to {phone_number}")
-                return True
-            else:
-                logger.error(f"✗ Failed to send OTP to {phone_number}: {response.text}")
-                return False
-
-        except requests.exceptions.Timeout:
-            logger.error(f"✗ Timeout while sending OTP to {phone_number}")
+        except APIException as e:
+            logger.error(f"✗ Kavenegar API Error for {phone_number}: {str(e)}")
             return False
-        except requests.exceptions.RequestException as e:
-            logger.error(f"✗ Error sending OTP to {phone_number}: {str(e)}")
+        except HTTPException as e:
+            logger.error(f"✗ Kavenegar HTTP Error for {phone_number}: {str(e)}")
+            return False
+        except ImportError:
+            logger.error("✗ Kavenegar library not installed. Run: pip install kavenegar")
             return False
         except Exception as e:
-            logger.error(f"✗ Unexpected error: {str(e)}")
+            logger.error(f"✗ Unexpected error sending OTP to {phone_number}: {str(e)}")
             return False
 
 
@@ -103,7 +96,7 @@ class OTPService:
         )
 
         # ارسال پیامک
-        sms_service = MeliPayamakService()
+        sms_service = KavenegarService()
         sms_sent = sms_service.send_otp(phone_number, otp_code)
 
         if not sms_sent:

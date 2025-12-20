@@ -87,3 +87,6 @@ zope.interface==8.1.1
 django-defender==0.9.7
 Pillow==10.4.0
 argon2-cffi==23.1.0
+
+# SMS Service
+kavenegar==1.1.2
