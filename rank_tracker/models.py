@@ -60,6 +60,11 @@ class RankKeyword(models.Model):
     current_rank = models.IntegerField(null=True, blank=True, verbose_name='رتبه فعلی')
     previous_rank = models.IntegerField(null=True, blank=True, verbose_name='رتبه قبلی')
     highest_rank = models.IntegerField(null=True, blank=True, verbose_name='بهترین رتبه')
+
+    # اطلاعات صفحه رتبه گرفته
+    ranked_url = models.URLField(max_length=1000, null=True, blank=True, verbose_name='URL صفحه')
+    ranked_page_title = models.CharField(max_length=500, null=True, blank=True, verbose_name='عنوان صفحه')
+
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
 
     class Meta:
@@ -95,10 +100,16 @@ class RankKeyword(models.Model):
             return round(total / history.count(), 1) if history.count() > 0 else None
         return None
 
-    def update_rank(self, new_rank):
+    def update_rank(self, new_rank, ranked_url=None, ranked_title=None):
         """آپدیت رتبه و ذخیره در تاریخچه"""
         self.previous_rank = self.current_rank
         self.current_rank = new_rank
+
+        # ذخیره URL و title صفحه
+        if ranked_url:
+            self.ranked_url = ranked_url
+        if ranked_title:
+            self.ranked_page_title = ranked_title
 
         # آپدیت بهترین رتبه
         if new_rank and (not self.highest_rank or new_rank < self.highest_rank):
@@ -107,13 +118,20 @@ class RankKeyword(models.Model):
         self.save()
 
         # ذخیره در تاریخچه
-        RankHistory.objects.create(keyword=self, rank=new_rank)
+        RankHistory.objects.create(
+            keyword=self,
+            rank=new_rank,
+            ranked_url=ranked_url,
+            ranked_page_title=ranked_title
+        )
 
 
 class RankHistory(models.Model):
     """تاریخچه رتبه‌ها برای نمایش Chart"""
     keyword = models.ForeignKey(RankKeyword, on_delete=models.CASCADE, related_name='history')
     rank = models.IntegerField(null=True, blank=True, verbose_name='رتبه')
+    ranked_url = models.URLField(max_length=1000, null=True, blank=True, verbose_name='URL صفحه')
+    ranked_page_title = models.CharField(max_length=500, null=True, blank=True, verbose_name='عنوان صفحه')
     checked_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ بررسی')
 
     class Meta:

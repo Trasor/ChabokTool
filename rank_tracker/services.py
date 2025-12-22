@@ -28,7 +28,7 @@ class SerperService:
             target_domain (str): دامنه هدف (مثال: digikala.com)
 
         Returns:
-            int or None: رتبه (1-100) یا None اگر پیدا نشد
+            dict or None: {'rank': int, 'url': str, 'title': str} یا None
         """
         try:
             payload = {
@@ -55,14 +55,16 @@ class SerperService:
                 return None
 
             data = response.json()
-            rank = self._find_domain_in_results(data, target_domain)
+            result = self._find_domain_in_results(data, target_domain)
 
-            if rank:
-                logger.info(f"✓ Found '{target_domain}' at rank {rank} for keyword '{keyword}'")
+            if result:
+                logger.info(f"✓ Found '{target_domain}' at rank {result['rank']} for keyword '{keyword}'")
+                logger.debug(f"  URL: {result['url']}")
+                logger.debug(f"  Title: {result['title']}")
             else:
                 logger.warning(f"⚠ Domain '{target_domain}' not found in top 100 for '{keyword}'")
 
-            return rank
+            return result
 
         except requests.exceptions.Timeout:
             logger.error(f"✗ Timeout while searching for '{keyword}'")
@@ -83,26 +85,42 @@ class SerperService:
             target_domain (str): دامنه هدف
 
         Returns:
-            int or None: رتبه (1-100) یا None
+            dict or None: {'rank': int, 'url': str, 'title': str} یا None
         """
         organic_results = results.get('organic', [])
 
-        # نرمال‌سازی دامنه هدف
-        target_domain_clean = target_domain.lower().replace('www.', '').strip()
+        # نرمال‌سازی دامنه هدف (حذف www و تبدیل به lowercase)
+        target_domain_clean = target_domain.lower().replace('www.', '').strip().rstrip('/')
+
+        # اگه دامنه فقط یه کلمه باشه (مثل dncbot)، فقط آن بخش را بگیر
+        # مثال: dncbot.ir -> dncbot
+        target_base = target_domain_clean.split('.')[0] if '.' in target_domain_clean else target_domain_clean
 
         for index, result in enumerate(organic_results, start=1):
             link = result.get('link', '')
+            title = result.get('title', 'بدون عنوان')
+
             if not link:
                 continue
 
             # استخراج دامنه از URL
             try:
                 parsed = urlparse(link)
-                result_domain = parsed.netloc.lower().replace('www.', '')
+                result_domain = parsed.netloc.lower().replace('www.', '').strip()
 
-                # مقایسه دامنه‌ها
+                # چند روش برای match کردن:
+                # 1. مطابقت کامل دامنه
+                if target_domain_clean == result_domain:
+                    return {'rank': index, 'url': link, 'title': title}
+
+                # 2. یکی زیرمجموعه دیگری باشه (برای subdomain ها)
                 if target_domain_clean in result_domain or result_domain in target_domain_clean:
-                    return index
+                    return {'rank': index, 'url': link, 'title': title}
+
+                # 3. مطابقت base domain (مثلا dncbot با dncbot.ir)
+                result_base = result_domain.split('.')[0] if '.' in result_domain else result_domain
+                if target_base == result_base and len(target_base) > 3:  # حداقل 4 کاراکتر
+                    return {'rank': index, 'url': link, 'title': title}
 
             except Exception as e:
                 logger.warning(f"⚠ Failed to parse URL '{link}': {str(e)}")
@@ -172,11 +190,20 @@ class RankService:
                 # تاخیر 200ms بین هر request (برای جلوگیری از Rate Limit)
                 time.sleep(0.2)
 
-                # دریافت رتبه از Serper
-                rank = self.serper.get_rank(keyword.keyword, project.target_domain)
+                # دریافت رتبه از Serper (حالا dict برمیگردونه)
+                result = self.serper.get_rank(keyword.keyword, project.target_domain)
 
-                # آپدیت کلمه کلیدی
-                keyword.update_rank(rank)
+                if result:
+                    # آپدیت کلمه کلیدی با URL و title
+                    keyword.update_rank(
+                        new_rank=result['rank'],
+                        ranked_url=result.get('url'),
+                        ranked_title=result.get('title')
+                    )
+                else:
+                    # رتبه پیدا نشد، null ذخیره می‌کنیم
+                    keyword.update_rank(new_rank=None)
+
                 updated_count += 1
 
             except Exception as e:
