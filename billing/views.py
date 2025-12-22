@@ -16,9 +16,18 @@ logger = logging.getLogger(__name__)
 CREDIT_PRICE_PER_1000 = 500000  # 500,000 تومان
 
 # ZarinPal Config
-ZARINPAL_WEBGATE = 'https://sandbox.zarinpal.com/pg/v4/payment/request.json'
+# URLs قدیمی (v4) - منسوخ شده
+# ZARINPAL_WEBGATE = 'https://sandbox.zarinpal.com/pg/v4/payment/request.json'
+# ZARINPAL_STARTPAY = 'https://sandbox.zarinpal.com/pg/StartPay/'
+# ZARINPAL_VERIFY = 'https://sandbox.zarinpal.com/pg/v4/payment/verify.json'
+
+# URLs جدید REST API
+ZARINPAL_WEBGATE = 'https://sandbox.zarinpal.com/pg/rest/WebGate/PaymentRequest.json'
 ZARINPAL_STARTPAY = 'https://sandbox.zarinpal.com/pg/StartPay/'
-ZARINPAL_VERIFY = 'https://sandbox.zarinpal.com/pg/v4/payment/verify.json'
+ZARINPAL_VERIFY = 'https://sandbox.zarinpal.com/pg/rest/WebGate/PaymentVerification.json'
+
+# حالت Mock برای تست (اگه True باشه، واقعا پرداخت نمیره)
+MOCK_PAYMENT = getattr(settings, 'MOCK_PAYMENT_FOR_DEV', False)
 
 
 @login_required
@@ -65,15 +74,32 @@ def buy_credit(request):
 def redirect_to_zarinpal(request, transaction):
     """ارسال درخواست به ZarinPal و Redirect"""
 
+    # اگر حالت Mock فعال باشه، مستقیم کردیت اضافه کن (برای تست)
+    if MOCK_PAYMENT:
+        logger.info(f"🧪 Mock Payment Mode: Adding {transaction.credit_amount} credits to user {request.user.username}")
+
+        # اضافه کردن کردیت
+        user_credit, created = UserCredit.objects.get_or_create(user=request.user)
+        user_credit.balance += transaction.credit_amount
+        user_credit.save()
+
+        # تغییر وضعیت تراکنش
+        transaction.status = 'paid'
+        transaction.ref_id = 'MOCK-' + str(transaction.id)
+        transaction.paid_at = timezone.now()
+        transaction.save()
+
+        messages.success(request, f'✅ [تست] پرداخت موفق! {transaction.credit_amount} کردیت به حساب شما اضافه شد.')
+        return redirect('transactions_list')
+
+    # ادامه پرداخت واقعی با ZarinPal
     payload = {
-        "merchant_id": settings.ZARINPAL_MERCHANT_ID,
-        "amount": transaction.price,  # به تومان
-        "description": f"خرید {transaction.credit_amount} کردیت",
-        "callback_url": settings.ZARINPAL_CALLBACK_URL,
-        "metadata": {
-            "email": request.user.email if request.user.email else "user@example.com",
-            "mobile": "09123456789"
-        }
+        "MerchantID": settings.ZARINPAL_MERCHANT_ID,  # REST API از MerchantID استفاده می‌کنه
+        "Amount": transaction.price,  # به تومان
+        "Description": f"خرید {transaction.credit_amount} کردیت",
+        "CallbackURL": settings.ZARINPAL_CALLBACK_URL,
+        "Email": request.user.email if request.user.email else "user@example.com",
+        "Mobile": "09123456789"
     }
 
     try:
@@ -101,18 +127,22 @@ def redirect_to_zarinpal(request, transaction):
             transaction.save()
             return redirect('transactions_list')
 
-        # بررسی پاسخ
-        if result.get('data') and result['data'].get('code') == 100:
-            authority = result['data']['authority']
+        # بررسی پاسخ (REST API)
+        # REST API: {"Status": 100, "Authority": "A00000000000000000000000000123456789"}
+        if result.get('Status') == 100 and result.get('Authority'):
+            authority = result['Authority']
 
             # ذخیره Authority
             transaction.authority = authority
             transaction.save()
 
+            logger.info(f"✓ ZarinPal Authority received: {authority}")
+
             # Redirect به درگاه
             return redirect(f"{ZARINPAL_STARTPAY}{authority}")
         else:
-            error_msg = result.get('errors', result.get('message', 'نامشخص'))
+            error_msg = result.get('errors', result.get('message', result.get('Status', 'نامشخص')))
+            logger.error(f"✗ ZarinPal Error: Status={result.get('Status')}, Response={result}")
             messages.error(request, f"❌ خطا در اتصال به درگاه: {error_msg}")
             transaction.status = 'failed'
             transaction.save()
@@ -155,36 +185,39 @@ def verify_payment(request):
         messages.error(request, '❌ تراکنش یافت نشد.')
         return redirect('transactions_list')
     
-    # Verify با ZarinPal
+    # Verify با ZarinPal (REST API)
     payload = {
-        "merchant_id": settings.ZARINPAL_MERCHANT_ID,
-        "amount": transaction.price,
-        "authority": authority
+        "MerchantID": settings.ZARINPAL_MERCHANT_ID,
+        "Amount": transaction.price,
+        "Authority": authority
     }
-    
+
     try:
         response = requests.post(ZARINPAL_VERIFY, json=payload, timeout=10)
         result = response.json()
-        
-        if result.get('data') and result['data'].get('code') == 100:
+
+        # REST API: {"Status": 100, "RefID": 123456789}
+        if result.get('Status') == 100:
             # پرداخت موفق
-            ref_id = result['data']['ref_id']
-            
+            ref_id = str(result.get('RefID', ''))
+
             transaction.status = 'paid'
             transaction.ref_id = ref_id
             transaction.paid_at = timezone.now()
             transaction.save()
-            
+
             # اضافه کردن کردیت به حساب کاربر
             user_credit, created = UserCredit.objects.get_or_create(user=request.user)
             user_credit.balance += transaction.credit_amount
             user_credit.save()
-            
+
+            logger.info(f"✓ Payment verified: RefID={ref_id}, Credits={transaction.credit_amount}")
             messages.success(request, f'✅ پرداخت موفق! {transaction.credit_amount} کردیت به حساب شما اضافه شد. (کد پیگیری: {ref_id})')
         else:
             transaction.status = 'failed'
             transaction.save()
-            messages.error(request, f'❌ پرداخت ناموفق: {result.get("errors", "نامشخص")}')
+            logger.error(f"✗ Payment verification failed: Status={result.get('Status')}, Response={result}")
+            messages.error(request, f'❌ پرداخت ناموفق: وضعیت {result.get("Status")}')
     
     except Exception as e:
         transaction.status = 'failed'

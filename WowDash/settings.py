@@ -148,6 +148,10 @@ ZARINPAL_MERCHANT_ID = '00000000-0000-0000-0000-000000000000'
 ZARINPAL_SANDBOX = True
 ZARINPAL_CALLBACK_URL = 'https://dncbot.ir/billing/verify/'
 
+# Mock Payment Mode (برای تست بدون نیاز به ZarinPal)
+# اگه True باشه، پرداخت‌ها بدون درگاه انجام میشن
+MOCK_PAYMENT_FOR_DEV = True  # برای تست، بعداً False کن
+
 # ✅ AI Configuration
 AI_ENABLED = config('AI_ENABLED', default=False, cast=bool)
 AI_PROVIDER = config('AI_PROVIDER', default='gemini')
