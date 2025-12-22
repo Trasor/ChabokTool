@@ -143,7 +143,8 @@ LOGIN_REDIRECT_URL = 'index'
 LOGOUT_REDIRECT_URL = 'signin'
 
 # ZarinPal Configuration
-ZARINPAL_MERCHANT_ID = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+# برای sandbox از این merchant ID استفاده می‌شود
+ZARINPAL_MERCHANT_ID = '00000000-0000-0000-0000-000000000000'
 ZARINPAL_SANDBOX = True
 ZARINPAL_CALLBACK_URL = 'https://dncbot.ir/billing/verify/'
 

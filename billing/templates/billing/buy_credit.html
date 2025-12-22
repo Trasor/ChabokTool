@@ -36,17 +36,20 @@
                             <label for="credit_amount" class="form-label">
                                 <strong>چند کردیت نیاز دارید؟</strong>
                             </label>
-                            <input type="number" 
-                                   class="form-control" 
-                                   id="credit_amount" 
-                                   name="credit_amount" 
-                                   min="200" 
-                                   step="100" 
-                                   placeholder="حداقل 200 کردیت که میشه 200 کوئری"
+                            <input type="number"
+                                   class="form-control form-control-lg"
+                                   id="credit_amount"
+                                   name="credit_amount"
+                                   min="200"
+                                   step="100"
+                                   value=""
+                                   placeholder="مثال: 500"
                                    required
-                                   oninput="calculatePrice()">
+                                   autocomplete="off"
+                                   oninput="calculatePrice()"
+                                   style="font-size: 1.25rem; padding: 0.75rem; text-align: center;">
                             <small class="text-muted mt-2 d-block">
-                                ⚠️ حداقل: 200 کردیت
+                                ⚠️ حداقل: 200 کردیت | مضربی از 100 وارد کنید
                             </small>
                         </div>
                         

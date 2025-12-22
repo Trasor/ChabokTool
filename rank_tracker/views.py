@@ -6,7 +6,7 @@ from django.db import transaction
 from .models import RankProject, RankKeyword, RankHistory
 from .forms import ProjectCreateForm, KeywordAddForm, KeywordImportForm
 from .services import RankService
-from billing.models import UserCredit
+from billing.models import UserCredit, Transaction
 import pandas as pd
 import openpyxl
 from openpyxl.styles import Font
@@ -40,9 +40,28 @@ def project_create(request):
             user_credit, created = UserCredit.objects.get_or_create(user=request.user)
 
             if user_credit.balance < cost:
-                messages.error(
+                # ایجاد خودکار فاکتور برای خرید کردیت مورد نیاز
+                needed_credit = cost - user_credit.balance
+
+                # محاسبه قیمت (هر 1000 کردیت = 500,000 تومان)
+                CREDIT_PRICE_PER_1000 = 500000
+                invoice_price = int((needed_credit / 1000) * CREDIT_PRICE_PER_1000)
+
+                # ساخت تراکنش pending
+                new_transaction = Transaction.objects.create(
+                    user=request.user,
+                    credit_amount=needed_credit,
+                    price=invoice_price,
+                    status='pending'
+                )
+
+                messages.warning(
                     request,
-                    f'❌ موجودی کافی نیست! نیاز: {cost} کردیت | موجودی فعلی: {user_credit.balance} کردیت'
+                    f'⚠️ موجودی کافی نیست! نیاز: {cost} کردیت | موجودی فعلی: {user_credit.balance} کردیت'
+                )
+                messages.info(
+                    request,
+                    f'✅ یک فاکتور {needed_credit} کردیتی ({invoice_price:,} تومان) برای شما ایجاد شد. لطفا پرداخت کنید.'
                 )
                 return redirect('transactions_list')
 
