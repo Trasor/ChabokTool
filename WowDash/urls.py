@@ -148,6 +148,8 @@ urlpatterns = [
     path('gap-analysis/', include('gap_analysis.urls')),
     # billing routes ✅ جدید
     path('billing/', include('billing.urls')),
+    # rank tracker routes ✅ جدید
+    path('rank-tracker/', include('rank_tracker.urls')),
     # Login/Logout URLs
     path('accounts/login/', accounts_views.signin_view, name='login'),
 ]

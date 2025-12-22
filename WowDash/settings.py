@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'keyword_research',
     'gap_analysis',
     'billing',
+    'rank_tracker',
     # Third-party
     'channels',
     'defender',
