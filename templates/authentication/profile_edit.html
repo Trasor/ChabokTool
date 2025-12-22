@@ -81,17 +81,39 @@
             </div>
         </div>
 
-        <!-- تغییر رمز عبور -->
+        <!-- اطلاعات حساب -->
         <div class="col-lg-4">
             <div class="card">
                 <div class="card-header">
-                    <h6 class="card-title mb-0">امنیت</h6>
+                    <h6 class="card-title mb-0">اطلاعات حساب</h6>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <p class="text-secondary-light mb-2">
-                            <iconify-icon icon="mdi:shield-check" class="text-success-600"></iconify-icon>
-                            حساب شما ایمن است
+                        <p class="text-sm text-secondary-light mb-2">
+                            <strong>نام کاربری:</strong><br>
+                            <span class="text-neutral-900">{{ user.username }}</span>
+                        </p>
+                        <p class="text-sm text-secondary-light mb-2">
+                            <strong>ایمیل:</strong><br>
+                            <span class="text-neutral-900">{{ user.email }}</span>
+                        </p>
+                        <p class="text-sm text-secondary-light mb-2">
+                            <strong>عضویت از:</strong><br>
+                            <span class="text-neutral-900">{{ user.date_joined|date:"Y/m/d" }}</span>
+                        </p>
+                        <p class="text-sm text-secondary-light mb-2">
+                            <strong>وضعیت:</strong><br>
+                            {% if user.is_phone_verified %}
+                                <span class="badge bg-success-600">
+                                    <iconify-icon icon="mdi:check-circle"></iconify-icon>
+                                    شماره تایید شده
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning-600">
+                                    <iconify-icon icon="mdi:alert-circle"></iconify-icon>
+                                    شماره تایید نشده
+                                </span>
+                            {% endif %}
                         </p>
                     </div>
 
@@ -99,24 +121,6 @@
                         <iconify-icon icon="mdi:lock-reset"></iconify-icon>
                         تغییر رمز عبور
                     </a>
-
-                    <div class="mt-24">
-                        <p class="text-sm text-secondary-light mb-1">
-                            <strong>نام کاربری:</strong> {{ user.username }}
-                        </p>
-                        <p class="text-sm text-secondary-light mb-1">
-                            <strong>عضویت از:</strong> {{ user.date_joined|date:"Y/m/d" }}
-                        </p>
-                        <p class="text-sm text-secondary-light">
-                            {% if user.is_phone_verified %}
-                                <iconify-icon icon="mdi:check-circle" class="text-success-600"></iconify-icon>
-                                شماره تایید شده
-                            {% else %}
-                                <iconify-icon icon="mdi:alert-circle" class="text-warning-600"></iconify-icon>
-                                شماره تایید نشده
-                            {% endif %}
-                        </p>
-                    </div>
                 </div>
             </div>
         </div>

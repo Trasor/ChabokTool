@@ -54,40 +54,36 @@ def signup_view(request):
     if request.method == 'POST':
         form = SignupForm(request.POST, request.FILES)
         if form.is_valid():
-            # ذخیره اطلاعات در session برای بعد از تایید OTP
-            request.session['signup_data'] = {
-                'username': form.cleaned_data['username'],
-                'first_name': form.cleaned_data['first_name'],
-                'last_name': form.cleaned_data['last_name'],
-                'phone_number': form.cleaned_data['phone_number'],
-                'email': form.cleaned_data['email'],
-                'password': form.cleaned_data['password1'],
-            }
-
-            # ذخیره عکس در session (اگر وجود داشته باشد)
-            if form.cleaned_data.get('profile_picture'):
-                request.session['has_profile_picture'] = True
-                # عکس رو موقتاً save می‌کنیم
-                request.session['profile_picture_path'] = form.cleaned_data['profile_picture'].name
-
             phone_number = form.cleaned_data['phone_number']
 
-            # بررسی امکان ارسال OTP جدید
+            # بررسی امکان درخواست OTP جدید
             can_request, remaining = OTPService.can_request_new_otp(phone_number)
             if not can_request:
-                messages.error(
-                    request,
-                    f'لطفاً {remaining} ثانیه صبر کنید قبل از درخواست کد جدید'
-                )
-                return render(request, 'authentication/signup.html', {'form': form})
+                messages.error(request, f'لطفاً {remaining} ثانیه دیگر تلاش کنید')
+                return render(request, 'authentication/signup.html', {
+                    'form': form,
+                    'recaptcha_site_key': settings.RECAPTCHA_SITE_KEY
+                })
 
-            # ارسال OTP
-            otp = OTPService.create_otp(phone_number)
+            # ذخیره اطلاعات در session
+            request.session['signup_data'] = {
+                'username': form.cleaned_data['username'],
+                'email': form.cleaned_data['email'],
+                'password': form.cleaned_data['password1'],
+                'first_name': form.cleaned_data['first_name'],
+                'last_name': form.cleaned_data['last_name'],
+                'phone_number': phone_number,
+            }
             request.session['otp_phone'] = phone_number
 
-            logger.info(f"OTP sent to {phone_number}")
-            messages.success(request, f'کد تایید به شماره {phone_number} ارسال شد')
-            return redirect('verify_otp')
+            # ایجاد و ارسال OTP
+            try:
+                OTPService.create_otp(phone_number)
+                messages.success(request, 'کد تایید به شماره شما ارسال شد')
+                return redirect('verify_otp')
+            except Exception as e:
+                logger.error(f"Error creating OTP: {str(e)}")
+                messages.error(request, 'خطا در ارسال کد تایید. لطفاً دوباره تلاش کنید')
         else:
             for field, errors in form.errors.items():
                 for error in errors:
