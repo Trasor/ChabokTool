@@ -234,13 +234,32 @@ def keyword_delete(request, keyword_id):
 
 @login_required
 def update_ranks(request, project_id):
-    """آپدیت رتبه‌های پروژه (از طریق Celery Task)"""
+    """آپدیت رتبه‌های پروژه (همه یا انتخابی)"""
     project = get_object_or_404(RankProject, id=project_id, user=request.user)
 
     if request.method == 'POST':
-        # آپدیت سنکرون (برای نسخه اولیه - بعداً Celery اضافه می‌کنیم)
+        update_type = request.POST.get('update_type', 'all')
+        selected_keywords = request.POST.get('selected_keywords', '')
+
         rank_service = RankService()
-        result = rank_service.update_project_ranks(project)
+
+        if update_type == 'selected' and selected_keywords:
+            # آپدیت فقط کلمات انتخابی
+            keyword_ids = [int(id) for id in selected_keywords.split(',') if id.strip()]
+            keywords = RankKeyword.objects.filter(
+                id__in=keyword_ids,
+                project=project
+            )
+
+            if not keywords.exists():
+                messages.error(request, '❌ هیچ کلمه معتبری انتخاب نشده است.')
+                return redirect('rank_tracker:project_detail', project_id=project.id)
+
+            # آپدیت انتخابی
+            result = rank_service.update_selected_keywords(project, keywords)
+        else:
+            # آپدیت همه
+            result = rank_service.update_project_ranks(project)
 
         if result['status'] == 'success':
             messages.success(

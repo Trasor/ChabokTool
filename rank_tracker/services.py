@@ -223,3 +223,65 @@ class RankService:
             'failed': failed_count,
             'total': keywords.count()
         }
+
+    def update_selected_keywords(self, project, keywords_queryset):
+        """
+        آپدیت فقط کلمات انتخابی (بدون کسر از محدودیت ماهانه)
+
+        Args:
+            project: RankProject instance
+            keywords_queryset: QuerySet of selected RankKeyword objects
+
+        Returns:
+            dict: نتیجه آپدیت
+        """
+        import time
+
+        # بررسی محدودیت ماهانه
+        project.check_and_reset_monthly_counter()
+
+        if not project.can_update:
+            return {
+                'status': 'failed',
+                'error': 'محدودیت 4 آپدیت در ماه به پایان رسیده است.'
+            }
+
+        updated_count = 0
+        failed_count = 0
+
+        for keyword in keywords_queryset:
+            try:
+                # تاخیر 200ms بین هر request
+                time.sleep(0.2)
+
+                # دریافت رتبه از Serper
+                result = self.serper.get_rank(keyword.keyword, project.target_domain)
+
+                if result:
+                    keyword.update_rank(
+                        new_rank=result['rank'],
+                        ranked_url=result.get('url'),
+                        ranked_title=result.get('title')
+                    )
+                else:
+                    keyword.update_rank(new_rank=None)
+
+                updated_count += 1
+
+            except Exception as e:
+                logger.error(f"✗ Failed to update keyword '{keyword.keyword}': {str(e)}")
+                failed_count += 1
+                continue
+
+        # آپدیت شمارنده پروژه (حتی برای آپدیت انتخابی)
+        from django.utils import timezone
+        project.update_count_current_month += 1
+        project.last_update_at = timezone.now()
+        project.save(update_fields=['update_count_current_month', 'last_update_at'])
+
+        return {
+            'status': 'success',
+            'updated': updated_count,
+            'failed': failed_count,
+            'total': keywords_queryset.count()
+        }
