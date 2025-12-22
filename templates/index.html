@@ -1,7 +1,105 @@
-{% extends './layout/layout.html' %} 
+{% extends './layout/layout.html' %}
 
 
 {% block content %}
+    <!-- ابزارهای SEO -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h5 class="mb-3">ابزارهای SEO</h5>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{% url 'rank_tracker:project_list' %}" class="text-decoration-none">
+                <div class="card shadow-sm border-primary h-100 hover-shadow">
+                    <div class="card-body p-20">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div>
+                                <p class="fw-medium text-primary-light mb-1">ردیابی رتبه</p>
+                                <h6 class="mb-0 text-primary">Rank Tracker</h6>
+                            </div>
+                            <div class="w-50-px h-50-px bg-primary rounded-circle d-flex justify-content-center align-items-center">
+                                <iconify-icon icon="mdi:chart-line" class="text-white text-2xl mb-0"></iconify-icon>
+                            </div>
+                        </div>
+                        <p class="fw-medium text-sm text-primary-light mt-12 mb-0">
+                            ردیابی رتبه کلمات کلیدی در Google
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{% url 'keyword_research:index' %}" class="text-decoration-none">
+                <div class="card shadow-sm border-success h-100 hover-shadow">
+                    <div class="card-body p-20">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div>
+                                <p class="fw-medium text-primary-light mb-1">تحقیق کلمات کلیدی</p>
+                                <h6 class="mb-0 text-success">Keyword Research</h6>
+                            </div>
+                            <div class="w-50-px h-50-px bg-success rounded-circle d-flex justify-content-center align-items-center">
+                                <iconify-icon icon="mdi:magnify" class="text-white text-2xl mb-0"></iconify-icon>
+                            </div>
+                        </div>
+                        <p class="fw-medium text-sm text-primary-light mt-12 mb-0">
+                            کشف کلمات کلیدی جدید
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{% url 'gap_analysis:index' %}" class="text-decoration-none">
+                <div class="card shadow-sm border-info h-100 hover-shadow">
+                    <div class="card-body p-20">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div>
+                                <p class="fw-medium text-primary-light mb-1">تحلیل شکاف</p>
+                                <h6 class="mb-0 text-info">Gap Analysis</h6>
+                            </div>
+                            <div class="w-50-px h-50-px bg-info rounded-circle d-flex justify-content-center align-items-center">
+                                <iconify-icon icon="mdi:chart-bubble" class="text-white text-2xl mb-0"></iconify-icon>
+                            </div>
+                        </div>
+                        <p class="fw-medium text-sm text-primary-light mt-12 mb-0">
+                            تحلیل شکاف کلمات کلیدی رقبا
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{% url 'buy_credit' %}" class="text-decoration-none">
+                <div class="card shadow-sm border-warning h-100 hover-shadow">
+                    <div class="card-body p-20">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div>
+                                <p class="fw-medium text-primary-light mb-1">خرید کردیت</p>
+                                <h6 class="mb-0 text-warning">Buy Credit</h6>
+                            </div>
+                            <div class="w-50-px h-50-px bg-warning rounded-circle d-flex justify-content-center align-items-center">
+                                <iconify-icon icon="mdi:wallet" class="text-white text-2xl mb-0"></iconify-icon>
+                            </div>
+                        </div>
+                        <p class="fw-medium text-sm text-primary-light mt-12 mb-0">
+                            خرید کردیت برای استفاده از ابزارها
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <style>
+    .hover-shadow {
+        transition: all 0.3s ease;
+    }
+    .hover-shadow:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+    }
+    </style>
+
+    <!-- آمار Demo (قدیمی) -->
     <div class="row row-cols-xxxl-5 row-cols-lg-3 row-cols-sm-2 row-cols-1 gy-4">
         <div class="col">
             <div class="card shadow-none border bg-gradient-start-1 h-100">
