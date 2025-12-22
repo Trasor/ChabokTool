@@ -44,7 +44,7 @@ def project_create(request):
                     request,
                     f'❌ موجودی کافی نیست! نیاز: {cost} کردیت | موجودی فعلی: {user_credit.balance} کردیت'
                 )
-                return redirect('billing:transactions_list')
+                return redirect('transactions_list')
 
             # کسر کردیت و ساخت پروژه
             with transaction.atomic():
