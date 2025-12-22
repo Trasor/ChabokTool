@@ -105,7 +105,8 @@ class SignupForm(ReCAPTCHAMixin, UserCreationForm):
             'class': 'form-control',
             'accept': 'image/*'
         }),
-        label='عکس پروفایل (اختیاری)'
+        label='عکس پروفایل (اختیاری)',
+        help_text='عکس باید مربعی و کمتر از 1 مگابایت باشد'
     )
 
     recaptcha_token = forms.CharField(
@@ -145,6 +146,20 @@ class SignupForm(ReCAPTCHAMixin, UserCreationForm):
         if User.objects.filter(email=email).exists():
             raise ValidationError('این ایمیل قبلاً ثبت شده است')
         return email
+
+    def clean_profile_picture(self):
+        """بررسی سایز و ابعاد عکس پروفایل"""
+        picture = self.cleaned_data.get('profile_picture')
+        if picture:
+            # بررسی سایز (حداکثر 1MB)
+            if picture.size > 1 * 1024 * 1024:  # 1MB in bytes
+                raise ValidationError('حجم عکس نباید بیشتر از 1 مگابایت باشد')
+
+            # بررسی فرمت
+            if not picture.content_type.startswith('image/'):
+                raise ValidationError('فایل باید یک تصویر باشد')
+
+        return picture
 
 
 class LoginForm(ReCAPTCHAMixin, AuthenticationForm):
@@ -253,6 +268,20 @@ class ProfileEditForm(forms.ModelForm):
             if User.objects.filter(phone_number=phone).exclude(pk=self.user.pk).exists():
                 raise ValidationError('این شماره تلفن قبلاً ثبت شده است')
         return phone
+
+    def clean_profile_picture(self):
+        """بررسی سایز و ابعاد عکس پروفایل"""
+        picture = self.cleaned_data.get('profile_picture')
+        if picture:
+            # بررسی سایز (حداکثر 1MB)
+            if picture.size > 1 * 1024 * 1024:  # 1MB in bytes
+                raise ValidationError('حجم عکس نباید بیشتر از 1 مگابایت باشد')
+
+            # بررسی فرمت
+            if not picture.content_type.startswith('image/'):
+                raise ValidationError('فایل باید یک تصویر باشد')
+
+        return picture
 
 
 class ChangePasswordForm(forms.Form):

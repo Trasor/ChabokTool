@@ -306,39 +306,62 @@
 
                 <div class="dropdown">
                     <button class="d-flex justify-content-center align-items-center rounded-circle" type="button" data-bs-toggle="dropdown">
-                        <img src="/static/images/user.png" alt="image" class="w-40-px h-40-px object-fit-cover rounded-circle">
+                        {% if user.is_authenticated and user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}" alt="{{ user.get_full_name }}" class="w-40-px h-40-px object-fit-cover rounded-circle">
+                        {% else %}
+                            <img src="/static/images/user.png" alt="user" class="w-40-px h-40-px object-fit-cover rounded-circle">
+                        {% endif %}
                     </button>
-                    <div class="dropdown-menu to-top dropdown-menu-sm">
+                    <div class="dropdown-menu to-top dropdown-menu-sm" style="left: auto !important; right: 0 !important;">
                         <div class="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
                             <div>
-                                <h6 class="text-lg text-primary-light fw-semibold mb-2">Shaidul Islam</h6>
-                                <span class="text-secondary-light fw-medium text-sm">Admin</span>
+                                {% if user.is_authenticated %}
+                                    <h6 class="text-lg text-primary-light fw-semibold mb-2">{{ user.get_full_name|default:user.username }}</h6>
+                                    <span class="text-secondary-light fw-medium text-sm">
+                                        {% if user.is_superuser %}مدیر{% elif user.is_staff %}کارمند{% else %}کاربر{% endif %}
+                                    </span>
+                                {% else %}
+                                    <h6 class="text-lg text-primary-light fw-semibold mb-2">مهمان</h6>
+                                {% endif %}
                             </div>
                             <button type="button" class="hover-text-danger">
                                 <iconify-icon icon="radix-icons:cross-1" class="icon text-xl"></iconify-icon>
                             </button>
                         </div>
                         <ul class="to-top-list">
+                            {% if user.is_authenticated %}
                             <li>
-                                <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3" href="{% url 'viewProfile' %}">
-                                    <iconify-icon icon="solar:user-linear" class="icon text-xl"></iconify-icon> My Profile
+                                <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3" href="{% url 'accounts:profile_edit' %}">
+                                    <iconify-icon icon="solar:user-linear" class="icon text-xl"></iconify-icon> مدیریت حساب
                                 </a>
                             </li>
                             <li>
                                 <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3" href="{% url 'email' %}">
-                                    <iconify-icon icon="tabler:message-check" class="icon text-xl"></iconify-icon> Inbox
+                                    <iconify-icon icon="tabler:message-check" class="icon text-xl"></iconify-icon> پیام‌ها
                                 </a>
                             </li>
                             <li>
                                 <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3" href="{% url 'company' %}">
-                                    <iconify-icon icon="icon-park-outline:setting-two" class="icon text-xl"></iconify-icon> Setting
+                                    <iconify-icon icon="icon-park-outline:setting-two" class="icon text-xl"></iconify-icon> تنظیمات
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-danger d-flex align-items-center gap-3" href="javascript:void(0)">
-                                    <iconify-icon icon="lucide:power" class="icon text-xl"></iconify-icon> Log Out
+                                <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-danger d-flex align-items-center gap-3" href="{% url 'accounts:signout' %}">
+                                    <iconify-icon icon="lucide:power" class="icon text-xl"></iconify-icon> خروج
                                 </a>
                             </li>
+                            {% else %}
+                            <li>
+                                <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3" href="{% url 'accounts:signin' %}">
+                                    <iconify-icon icon="solar:login-2-linear" class="icon text-xl"></iconify-icon> ورود
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3" href="{% url 'accounts:signup' %}">
+                                    <iconify-icon icon="solar:user-plus-linear" class="icon text-xl"></iconify-icon> ثبت‌نام
+                                </a>
+                            </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div><!-- Profile dropdown end -->

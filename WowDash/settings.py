@@ -225,10 +225,10 @@ DEFENDER_STORE_ACCESS_ATTEMPTS = True
 DEFENDER_USE_CELERY = False
 DEFENDER_LOCK_OUT_BY_IP_AND_USERNAME = True
 
-# Meli Payamak SMS Configuration
-MELIPAYAMAK_API_KEY = config('MELIPAYAMAK_API_KEY', default='')
-MELIPAYAMAK_PATTERN_CODE = config('MELIPAYAMAK_PATTERN_CODE', default='')
-MELIPAYAMAK_SENDER_NUMBER = config('MELIPAYAMAK_SENDER_NUMBER', default='')
+# Kavenegar SMS Configuration
+KAVENEGAR_API_KEY = config('KAVENEGAR_API_KEY', default='')
+KAVENEGAR_TEMPLATE = config('KAVENEGAR_TEMPLATE', default='verify')  # نام template برای OTP
+KAVENEGAR_SENDER = config('KAVENEGAR_SENDER', default='')  # شماره ارسال‌کننده (اختیاری)
 
 # reCAPTCHA Configuration
 RECAPTCHA_SITE_KEY = config('RECAPTCHA_SITE_KEY', default='')
