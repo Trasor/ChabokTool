@@ -1,5 +1,6 @@
 {% extends 'layout/layout.html' %}
 {% load static %}
+{% load jalali_tags %}
 
 {% block title %}ردیابی رتبه - لیست پروژه‌ها{% endblock %}
 
@@ -29,7 +30,7 @@
                         <strong>آپدیت:</strong> {{ project.update_count_current_month }} / 4
                     </p>
                     {% if project.last_update_at %}
-                        <small class="text-muted">آخرین آپدیت: {{ project.last_update_at|date:"Y-m-d H:i" }}</small>
+                        <small class="text-muted">آخرین آپدیت: {{ project.last_update_at|jalali_datetime }}</small>
                     {% endif %}
                 </div>
                 <div class="card-footer">

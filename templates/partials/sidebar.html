@@ -53,14 +53,36 @@
                 <ul class="sidebar-submenu">
                     <li>
                         <a href="{% url 'gap_requests_list' %}">
-                            <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i> 
+                            <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i>
                             لیست درخواست‌ها
                         </a>
                     </li>
                     <li>
                         <a href="{% url 'gap_analysis' %}">
-                            <i class="ri-circle-fill circle-icon text-success-main w-auto"></i> 
+                            <i class="ri-circle-fill circle-icon text-success-main w-auto"></i>
                             افزودن درخواست جدید
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- ردیابی رتبه -->
+            <li class="dropdown">
+                <a href="javascript:void(0)">
+                    <iconify-icon icon="mdi:google" class="menu-icon"></iconify-icon>
+                    <span>ردیابی رتبه</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li>
+                        <a href="{% url 'rank_tracker:project_list' %}">
+                            <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i>
+                            لیست پروژه‌ها
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'rank_tracker:project_create' %}">
+                            <i class="ri-circle-fill circle-icon text-success-main w-auto"></i>
+                            پروژه جدید
                         </a>
                     </li>
                 </ul>

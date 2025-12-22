@@ -95,16 +95,55 @@ def project_create(request):
 @login_required
 def project_detail(request, project_id):
     """جزئیات پروژه و جدول کلمات کلیدی"""
+    from datetime import timedelta
+    from django.utils import timezone
+
     project = get_object_or_404(RankProject, id=project_id, user=request.user)
 
     # بررسی و reset شمارنده ماهانه
     project.check_and_reset_monthly_counter()
 
+    # دریافت فیلتر تاریخی
+    days_filter = request.GET.get('days', 'all')
+
     keywords = project.keywords.all().order_by('keyword')
+
+    # اگر فیلتر تاریخی فعال باشد، محاسبات مجدد انجام دهیم
+    if days_filter != 'all':
+        try:
+            days = int(days_filter)
+            cutoff_date = timezone.now() - timedelta(days=days)
+
+            # برای هر کلمه، تاریخچه فیلتر شده را بگیریم
+            for keyword in keywords:
+                filtered_history = keyword.history.filter(checked_at__gte=cutoff_date).order_by('checked_at')
+
+                if filtered_history.exists():
+                    # محاسبه بهترین رتبه در بازه زمانی
+                    keyword.filtered_highest_rank = min(
+                        [h.rank for h in filtered_history if h.rank],
+                        default=None
+                    )
+
+                    # محاسبه تغییر رتبه (اولین و آخرین در بازه)
+                    first_rank = filtered_history.first().rank
+                    last_rank = filtered_history.last().rank
+
+                    if first_rank and last_rank:
+                        keyword.filtered_rank_change = first_rank - last_rank
+                    else:
+                        keyword.filtered_rank_change = None
+                else:
+                    keyword.filtered_highest_rank = None
+                    keyword.filtered_rank_change = None
+        except ValueError:
+            # اگر days عدد نباشد، فیلتر نکن
+            pass
 
     context = {
         'project': project,
-        'keywords': keywords
+        'keywords': keywords,
+        'days_filter': days_filter
     }
     return render(request, 'rank_tracker/project_detail.html', context)
 

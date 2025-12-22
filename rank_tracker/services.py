@@ -89,6 +89,9 @@ class SerperService:
         """
         organic_results = results.get('organic', [])
 
+        # لاگ تعداد نتایج دریافتی
+        logger.info(f"📊 Received {len(organic_results)} organic results from Serper API")
+
         # نرمال‌سازی دامنه هدف (حذف www و تبدیل به lowercase)
         target_domain_clean = target_domain.lower().replace('www.', '').strip().rstrip('/')
 
