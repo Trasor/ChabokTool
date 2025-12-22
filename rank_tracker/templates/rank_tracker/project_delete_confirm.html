@@ -1,0 +1,54 @@
+{% extends 'layout/layout.html' %}
+{% load static %}
+
+{% block title %}حذف پروژه - {{ project.project_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-danger shadow mt-5">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="ri-alert-line"></i> تایید حذف پروژه</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <h5><i class="ri-error-warning-line"></i> هشدار!</h5>
+                        <p class="mb-0">این عملیات غیرقابل بازگشت است.</p>
+                    </div>
+
+                    <h5 class="mb-3">آیا از حذف این پروژه اطمینان دارید؟</h5>
+
+                    <div class="bg-light p-3 rounded mb-4">
+                        <p class="mb-2"><strong>نام پروژه:</strong> {{ project.project_name }}</p>
+                        <p class="mb-2"><strong>دامنه هدف:</strong> {{ project.target_domain }}</p>
+                        <p class="mb-2"><strong>تعداد کلمات:</strong> {{ project.keywords_count }}</p>
+                        <p class="mb-0"><strong>تاریخ ساخت:</strong> {{ project.created_date|date:"Y-m-d H:i" }}</p>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <strong>موارد زیر حذف خواهند شد:</strong>
+                        <ul class="mb-0">
+                            <li>تمام کلمات کلیدی ({{ project.keywords_count }} عدد)</li>
+                            <li>تاریخچه رتبه‌ها</li>
+                            <li>آمار و گزارش‌ها</li>
+                        </ul>
+                    </div>
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="ri-delete-bin-line"></i> بله، پروژه را حذف کن
+                            </button>
+                            <a href="{% url 'rank_tracker:project_detail' project.id %}" class="btn btn-secondary btn-lg">
+                                <i class="ri-close-line"></i> انصراف
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

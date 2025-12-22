@@ -1,0 +1,163 @@
+{% extends 'layout/layout.html' %}
+{% load static %}
+
+{% block title %}افزودن کلمات کلیدی - {{ project.project_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0 text-gray-800">افزودن کلمات کلیدی</h1>
+                <a href="{% url 'rank_tracker:project_detail' project.id %}" class="btn btn-secondary">
+                    <i class="ri-arrow-right-line"></i> بازگشت به پروژه
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5><i class="ri-information-line"></i> اطلاعات پروژه</h5>
+                    <p class="mb-0">
+                        <strong>نام پروژه:</strong> {{ project.project_name }} |
+                        <strong>دامنه:</strong> {{ project.target_domain }} |
+                        <strong>ظرفیت:</strong> {{ project.keywords_count }} / {{ project.keyword_capacity }}
+                        <span class="badge bg-{% if project.keywords_count >= project.keyword_capacity %}danger{% else %}success{% endif %}">
+                            {{ project.keyword_capacity|add:"-"|add:project.keywords_count }} باقیمانده
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- فرم دستی -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="ri-keyboard-line"></i> روش 1: ورود دستی</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="{{ manual_form.keywords.id_for_label }}" class="form-label">
+                                {{ manual_form.keywords.label }}
+                            </label>
+                            {{ manual_form.keywords }}
+                            <small class="form-text text-muted">
+                                {{ manual_form.keywords.help_text }}
+                            </small>
+                            {% if manual_form.keywords.errors %}
+                                <div class="text-danger mt-2">
+                                    {% for error in manual_form.keywords.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="alert alert-info">
+                            <strong>نکات:</strong>
+                            <ul class="mb-0">
+                                <li>هر کلمه در یک خط جداگانه</li>
+                                <li>کلمات تکراری نادیده گرفته می‌شوند</li>
+                                <li>حداکثر تا ظرفیت باقی‌مانده</li>
+                            </ul>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="ri-add-line"></i> افزودن کلمات
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- فرم آپلود Excel -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="ri-file-excel-2-line"></i> روش 2: آپلود Excel</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="{{ import_form.file.id_for_label }}" class="form-label">
+                                {{ import_form.file.label }}
+                            </label>
+                            {{ import_form.file }}
+                            <small class="form-text text-muted">
+                                {{ import_form.file.help_text }}
+                            </small>
+                            {% if import_form.file.errors %}
+                                <div class="text-danger mt-2">
+                                    {% for error in import_form.file.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <strong>فرمت فایل:</strong>
+                            <ul class="mb-0">
+                                <li>فقط یک ستون با نام <code>keyword</code></li>
+                                <li>اولین سطر: هدر (keyword)</li>
+                                <li>سطرهای بعدی: کلمات کلیدی</li>
+                                <li>فرمت: .xlsx یا .xls</li>
+                                <li>حداکثر حجم: 2 مگابایت</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="ri-upload-2-line"></i> آپلود و افزودن
+                            </button>
+                            <a href="{% url 'rank_tracker:download_sample' %}" class="btn btn-outline-secondary">
+                                <i class="ri-download-line"></i> دانلود فایل نمونه
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نمونه فرمت Excel -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">📋 نمونه فرمت Excel</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>keyword</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>خرید گوشی موبایل</td></tr>
+                                <tr><td>قیمت لپ تاپ</td></tr>
+                                <tr><td>بهترین تبلت</td></tr>
+                                <tr><td>خرید آنلاین</td></tr>
+                                <tr><td>فروشگاه اینترنتی</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

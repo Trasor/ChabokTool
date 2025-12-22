@@ -1,0 +1,187 @@
+{% extends 'layout/layout.html' %}
+{% load static %}
+
+{% block title %}ساخت پروژه جدید - ردیابی رتبه{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0 text-gray-800">ساخت پروژه جدید</h1>
+                <a href="{% url 'rank_tracker:project_list' %}" class="btn btn-secondary">
+                    <i class="ri-arrow-right-line"></i> بازگشت
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">اطلاعات پروژه</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="projectForm">
+                        {% csrf_token %}
+
+                        <!-- نام پروژه -->
+                        <div class="mb-3">
+                            <label for="{{ form.project_name.id_for_label }}" class="form-label">
+                                {{ form.project_name.label }}
+                            </label>
+                            {{ form.project_name }}
+                            {% if form.project_name.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.project_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- دامنه هدف -->
+                        <div class="mb-3">
+                            <label for="{{ form.target_domain.id_for_label }}" class="form-label">
+                                {{ form.target_domain.label }}
+                            </label>
+                            {{ form.target_domain }}
+                            <small class="form-text text-muted">
+                                {{ form.target_domain.help_text }}
+                            </small>
+                            {% if form.target_domain.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.target_domain.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- ظرفیت کلمات کلیدی -->
+                        <div class="mb-3">
+                            <label for="{{ form.keyword_capacity.id_for_label }}" class="form-label">
+                                {{ form.keyword_capacity.label }}
+                            </label>
+                            <input type="range"
+                                   class="form-range"
+                                   id="capacityRange"
+                                   min="100"
+                                   max="1000"
+                                   step="100"
+                                   value="100"
+                                   oninput="updateCapacity(this.value)">
+
+                            <div class="d-flex justify-content-between mt-2">
+                                <div>
+                                    <h5>انتخاب شده: <span id="selectedCapacity" class="text-primary">100</span> کلمه</h5>
+                                </div>
+                                <div>
+                                    <h5 class="text-danger">هزینه: <span id="calculatedCost">500</span> کردیت</h5>
+                                </div>
+                            </div>
+
+                            <input type="hidden" name="keyword_capacity" id="keyword_capacity" value="100">
+
+                            <small class="form-text text-muted">
+                                {{ form.keyword_capacity.help_text }}
+                            </small>
+                            {% if form.keyword_capacity.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.keyword_capacity.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="ri-save-line"></i> ایجاد پروژه
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">💰 موجودی شما</h5>
+                </div>
+                <div class="card-body">
+                    <h3 class="text-center">{{ balance|default:0 }} کردیت</h3>
+                    {% if balance < 500 %}
+                        <div class="alert alert-warning mt-3">
+                            <strong>توجه:</strong> موجودی شما کافی نیست! برای ساخت پروژه حداقل 500 کردیت نیاز است.
+                        </div>
+                        <a href="{% url 'billing:transactions_list' %}" class="btn btn-primary w-100">
+                            خرید کردیت
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">📋 قیمت‌گذاری</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>ظرفیت</th>
+                                <th>هزینه</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>100 کلمه</td>
+                                <td>500 کردیت</td>
+                            </tr>
+                            <tr>
+                                <td>200 کلمه</td>
+                                <td>1,000 کردیت</td>
+                            </tr>
+                            <tr>
+                                <td>300 کلمه</td>
+                                <td>1,500 کردیت</td>
+                            </tr>
+                            <tr>
+                                <td>500 کلمه</td>
+                                <td>2,500 کردیت</td>
+                            </tr>
+                            <tr>
+                                <td>1000 کلمه</td>
+                                <td>5,000 کردیت</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="alert alert-info">
+                        <small>
+                            💡 هزینه فقط هنگام ساخت پروژه کسر می‌شود.<br>
+                            ✅ آپدیت رتبه‌ها رایگان است (محدودیت 4 بار/ماه)
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateCapacity(value) {
+    // آپدیت مقدار نمایشی
+    document.getElementById('selectedCapacity').textContent = value;
+
+    // محاسبه هزینه
+    let cost = (parseInt(value) / 100) * 500;
+    document.getElementById('calculatedCost').textContent = cost.toLocaleString();
+
+    // آپدیت input hidden
+    document.getElementById('keyword_capacity').value = value;
+}
+</script>
+{% endblock %}
