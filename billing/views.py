@@ -7,6 +7,9 @@ from django.conf import settings
 from .models import Transaction, UserCredit
 import requests
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # قیمت هر 1000 کردیت
@@ -61,38 +64,74 @@ def buy_credit(request):
 
 def redirect_to_zarinpal(request, transaction):
     """ارسال درخواست به ZarinPal و Redirect"""
-    
+
     payload = {
         "merchant_id": settings.ZARINPAL_MERCHANT_ID,
         "amount": transaction.price,  # به تومان
         "description": f"خرید {transaction.credit_amount} کردیت",
         "callback_url": settings.ZARINPAL_CALLBACK_URL,
         "metadata": {
-            "email": request.user.email if request.user.email else "user@example.com",  # ✅ فیکس
-            "mobile": "09123456789"  # ✅ فیکس - موبایل تستی
+            "email": request.user.email if request.user.email else "user@example.com",
+            "mobile": "09123456789"
         }
     }
-    
+
     try:
         response = requests.post(ZARINPAL_WEBGATE, json=payload, timeout=10)
-        result = response.json()
-        
-        if result.get('data') and result['data'].get('code') == 100:
-            authority = result['data']['authority']
-            
-            # ذخیره Authority
-            transaction.authority = authority
-            transaction.save()
-            
-            # Redirect به درگاه
-            return redirect(f"{ZARINPAL_STARTPAY}{authority}")
-        else:
-            messages.error(request, f"❌ خطا در اتصال به درگاه: {result.get('errors', 'نامشخص')}")
+
+        # دیباگ: لاگ کردن response
+        logger.info(f"ZarinPal Response Status: {response.status_code}")
+        logger.info(f"ZarinPal Response Text: {response.text[:500]}")  # اولین 500 کاراکتر
+
+        # بررسی status code
+        if response.status_code != 200:
+            messages.error(request, f"❌ خطا در اتصال به درگاه: HTTP {response.status_code}")
             transaction.status = 'failed'
             transaction.save()
             return redirect('transactions_list')
-    
+
+        # Parse کردن JSON
+        try:
+            result = response.json()
+        except ValueError as json_error:
+            logger.error(f"JSON Parse Error: {str(json_error)}")
+            logger.error(f"Response Content: {response.text}")
+            messages.error(request, f"❌ خطا در دریافت پاسخ از درگاه. لطفا دوباره تلاش کنید.")
+            transaction.status = 'failed'
+            transaction.save()
+            return redirect('transactions_list')
+
+        # بررسی پاسخ
+        if result.get('data') and result['data'].get('code') == 100:
+            authority = result['data']['authority']
+
+            # ذخیره Authority
+            transaction.authority = authority
+            transaction.save()
+
+            # Redirect به درگاه
+            return redirect(f"{ZARINPAL_STARTPAY}{authority}")
+        else:
+            error_msg = result.get('errors', result.get('message', 'نامشخص'))
+            messages.error(request, f"❌ خطا در اتصال به درگاه: {error_msg}")
+            transaction.status = 'failed'
+            transaction.save()
+            return redirect('transactions_list')
+
+    except requests.exceptions.Timeout:
+        messages.error(request, '❌ زمان اتصال به درگاه تمام شد. لطفا دوباره تلاش کنید.')
+        transaction.status = 'failed'
+        transaction.save()
+        return redirect('transactions_list')
+
+    except requests.exceptions.ConnectionError:
+        messages.error(request, '❌ خطا در اتصال به درگاه. لطفا اتصال اینترنت خود را بررسی کنید.')
+        transaction.status = 'failed'
+        transaction.save()
+        return redirect('transactions_list')
+
     except Exception as e:
+        logger.error(f"Unexpected error in redirect_to_zarinpal: {str(e)}", exc_info=True)
         messages.error(request, f'❌ خطا: {str(e)}')
         transaction.status = 'failed'
         transaction.save()
