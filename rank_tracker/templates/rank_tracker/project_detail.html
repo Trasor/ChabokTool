@@ -79,7 +79,7 @@
                             </div>
                             <div class="h6 mb-0 font-weight-bold text-gray-800">
                                 {% if project.last_update_at %}
-                                    {{ project.last_update_at|date:"Y-m-d H:i" }}
+                                    {{ project.last_update_at|date:"Y/m/d H:i" }}
                                 {% else %}
                                     هنوز آپدیت نشده
                                 {% endif %}
@@ -114,31 +114,50 @@
         </div>
     </div>
 
-    <!-- دکمه آپدیت رتبه‌ها -->
+    <!-- دکمه‌های آپدیت -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    {% if project.can_update %}
-                        <form method="post" action="{% url 'rank_tracker:update_ranks' project.id %}" style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-primary btn-lg" onclick="return confirm('آیا از آپدیت رتبه‌ها اطمینان دارید؟')">
-                                <i class="ri-refresh-line"></i> آپدیت رتبه‌ها
-                            </button>
-                        </form>
-                        <span class="text-muted ms-3">
-                            <i class="ri-information-line"></i>
-                            {{ project.update_count_current_month|add:"-4"|add:"4" }} آپدیت باقی‌مانده در این ماه
-                        </span>
-                    {% else %}
-                        <button class="btn btn-secondary btn-lg" disabled>
-                            <i class="ri-forbid-line"></i> محدودیت ماهانه تمام شد
-                        </button>
-                        <span class="text-danger ms-3">
-                            <i class="ri-alert-line"></i>
-                            محدودیت 4 آپدیت در ماه به پایان رسیده. ماه بعد دوباره فعال می‌شود.
-                        </span>
-                    {% endif %}
+                    <form method="post" id="updateForm" action="{% url 'rank_tracker:update_ranks' project.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="selected_keywords" id="selectedKeywords" value="">
+
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                            <div>
+                                {% if project.can_update %}
+                                    <button type="submit" name="update_type" value="all" class="btn btn-primary btn-lg" onclick="return confirm('آیا از آپدیت همه کلمات اطمینان دارید؟')">
+                                        <i class="ri-refresh-line"></i> آپدیت همه
+                                    </button>
+                                    <button type="button" class="btn btn-success btn-lg" onclick="updateSelected()">
+                                        <i class="ri-checkbox-multiple-line"></i> آپدیت انتخاب شده‌ها
+                                    </button>
+                                    <span class="text-muted ms-3">
+                                        <i class="ri-information-line"></i>
+                                        {{ project.update_count_current_month|add:"-4"|add:"4" }} آپدیت باقی‌مانده
+                                    </span>
+                                {% else %}
+                                    <button class="btn btn-secondary btn-lg" disabled>
+                                        <i class="ri-forbid-line"></i> محدودیت ماهانه تمام شد
+                                    </button>
+                                    <span class="text-danger ms-3">
+                                        <i class="ri-alert-line"></i>
+                                        محدودیت 4 آپدیت در ماه به پایان رسیده
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <!-- فیلترهای تاریخی -->
+                            <div class="d-flex gap-2 flex-wrap">
+                                <select class="form-select" id="dateFilter" onchange="filterByDate()">
+                                    <option value="all">از اول تا کنون</option>
+                                    <option value="30">از ماه گذشته تا الان</option>
+                                    <option value="15">از 15 روز گذشته تا الان</option>
+                                    <option value="7">از 7 روز گذشته تا الان</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -154,24 +173,29 @@
                 <div class="card-body">
                     {% if keywords %}
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover">
+                            <table class="table table-striped table-hover" id="keywordsTable">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th>#</th>
+                                        <th>
+                                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
+                                        </th>
                                         <th>کلمه کلیدی</th>
                                         <th>رتبه فعلی</th>
                                         <th>رتبه قبلی</th>
                                         <th>تغییر</th>
                                         <th>بهترین رتبه</th>
                                         <th>صفحه</th>
+                                        <th>صفحه رتبه‌گرفته</th>
                                         <th>نمودار</th>
                                         <th>عملیات</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for keyword in keywords %}
-                                    <tr>
-                                        <td>{{ forloop.counter }}</td>
+                                    <tr data-keyword-id="{{ keyword.id }}">
+                                        <td>
+                                            <input type="checkbox" class="keyword-checkbox" value="{{ keyword.id }}">
+                                        </td>
                                         <td><strong>{{ keyword.keyword }}</strong></td>
                                         <td>
                                             {% if keyword.current_rank %}
@@ -221,9 +245,19 @@
                                             {% endif %}
                                         </td>
                                         <td>
+                                            {% if keyword.ranked_url and keyword.ranked_page_title %}
+                                                <a href="{{ keyword.ranked_url }}" target="_blank" class="text-primary" title="{{ keyword.ranked_page_title }}">
+                                                    {{ keyword.ranked_page_title|truncatechars:40 }}
+                                                    <i class="ri-external-link-line"></i>
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
                                             <button class="btn btn-sm btn-outline-primary"
                                                     onclick="showChart({{ keyword.id }}, '{{ keyword.keyword|escapejs }}')">
-                                                <i class="ri-line-chart-line"></i> نمودار
+                                                <i class="ri-line-chart-line"></i>
                                             </button>
                                         </td>
                                         <td>
@@ -251,23 +285,6 @@
             </div>
         </div>
     </div>
-
-    <!-- حذف پروژه -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card border-danger">
-                <div class="card-header bg-danger text-white">
-                    <h5 class="mb-0"><i class="ri-alert-line"></i> منطقه خطرناک</h5>
-                </div>
-                <div class="card-body">
-                    <p>حذف پروژه غیرقابل بازگشت است. تمام کلمات کلیدی و تاریخچه رتبه‌ها حذف خواهند شد.</p>
-                    <a href="{% url 'rank_tracker:project_delete' project.id %}" class="btn btn-danger">
-                        <i class="ri-delete-bin-line"></i> حذف پروژه
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <!-- Modal برای نمایش Chart -->
@@ -287,25 +304,73 @@
 
 <!-- ApexCharts -->
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<!-- جلالی -->
+<script src="https://cdn.jsdelivr.net/npm/moment-jalaali@0.9.6/moment-jalaali.min.js"></script>
+
 <script>
 let chartInstance = null;
 
+// انتخاب همه
+function toggleSelectAll(checkbox) {
+    const checkboxes = document.querySelectorAll('.keyword-checkbox');
+    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+}
+
+// آپدیت انتخاب شده‌ها
+function updateSelected() {
+    const checkboxes = document.querySelectorAll('.keyword-checkbox:checked');
+    if (checkboxes.length === 0) {
+        alert('لطفا حداقل یک کلمه کلیدی را انتخاب کنید');
+        return;
+    }
+
+    if (!confirm(`آیا از آپدیت ${checkboxes.length} کلمه کلیدی اطمینان دارید؟`)) {
+        return;
+    }
+
+    const ids = Array.from(checkboxes).map(cb => cb.value);
+    document.getElementById('selectedKeywords').value = ids.join(',');
+
+    const form = document.getElementById('updateForm');
+    const updateType = document.createElement('input');
+    updateType.type = 'hidden';
+    updateType.name = 'update_type';
+    updateType.value = 'selected';
+    form.appendChild(updateType);
+    form.submit();
+}
+
+// فیلتر تاریخی (فعلا فقط UI - backend نیاز به query داره)
+function filterByDate() {
+    const days = document.getElementById('dateFilter').value;
+    if (days === 'all') {
+        document.querySelectorAll('#keywordsTable tbody tr').forEach(row => {
+            row.style.display = '';
+        });
+    } else {
+        alert('فیلتر تاریخی در نسخه بعدی فعال می‌شود');
+    }
+}
+
+// نمایش Chart
 function showChart(keywordId, keywordText) {
-    // دریافت داده‌های Chart از API
     fetch(`/rank-tracker/api/keyword-history/${keywordId}/`)
         .then(response => response.json())
         .then(data => {
-            // نمایش Modal
             const modal = new bootstrap.Modal(document.getElementById('chartModal'));
             document.getElementById('chartModalLabel').textContent = `تاریخچه رتبه: ${keywordText}`;
             modal.show();
 
-            // پاک کردن Chart قبلی
             if (chartInstance) {
                 chartInstance.destroy();
             }
 
-            // ساخت Chart جدید
+            // تبدیل تاریخ‌ها به فارسی
+            const persianDates = data.dates.map(date => {
+                return moment(date, 'YYYY-MM-DD').format('jYYYY/jMM/jDD');
+            });
+
             const options = {
                 series: [{
                     name: 'رتبه',
@@ -324,9 +389,9 @@ function showChart(keywordId, keywordText) {
                     width: 3
                 },
                 xaxis: {
-                    categories: data.dates,
+                    categories: persianDates,
                     title: {
-                        text: 'تاریخ'
+                        text: 'تاریخ (شمسی)'
                     }
                 },
                 yaxis: {
@@ -348,7 +413,7 @@ function showChart(keywordId, keywordText) {
                 tooltip: {
                     y: {
                         formatter: function(value) {
-                            return `رتبه ${value}`;
+                            return value ? `رتبه ${value}` : 'یافت نشد';
                         }
                     }
                 }
