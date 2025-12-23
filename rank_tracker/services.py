@@ -55,6 +55,13 @@ class SerperService:
                 return None
 
             data = response.json()
+
+            # Debug: لاگ کامل response برای بررسی
+            logger.debug(f"📋 Serper API full response for '{keyword}':")
+            logger.debug(f"   Total organic results: {len(data.get('organic', []))}")
+            if 'searchParameters' in data:
+                logger.debug(f"   Search parameters: {data['searchParameters']}")
+
             result = self._find_domain_in_results(data, target_domain)
 
             if result:

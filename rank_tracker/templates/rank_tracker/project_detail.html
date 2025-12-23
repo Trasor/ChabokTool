@@ -30,7 +30,7 @@
 
     <!-- آمار پروژه -->
     <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col-lg-4 col-md-4 col-12 mb-3">
             <div class="card border-left-primary shadow h-100">
                 <div class="card-body">
                     <div class="row align-items-center">
@@ -50,7 +50,7 @@
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col-lg-4 col-md-4 col-12 mb-3">
             <div class="card border-left-success shadow h-100">
                 <div class="card-body">
                     <div class="row align-items-center">
@@ -158,7 +158,7 @@
                                 <thead class="table-dark">
                                     <tr>
                                         <th style="width: 50px; text-align: center;">
-                                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)" style="cursor: pointer; width: 18px; height: 18px;">
+                                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)" style="cursor: pointer; width: 18px; height: 18px; border: 2px solid #333; accent-color: #0d6efd;">
                                         </th>
                                         <th>کلمه کلیدی</th>
                                         <th>رتبه فعلی</th>
@@ -175,7 +175,7 @@
                                     {% for keyword in keywords %}
                                     <tr data-keyword-id="{{ keyword.id }}">
                                         <td style="text-align: center;">
-                                            <input type="checkbox" class="keyword-checkbox" value="{{ keyword.id }}" style="cursor: pointer; width: 18px; height: 18px;">
+                                            <input type="checkbox" class="keyword-checkbox" value="{{ keyword.id }}" style="cursor: pointer; width: 18px; height: 18px; border: 2px solid #333; accent-color: #0d6efd;">
                                         </td>
                                         <td><strong>{{ keyword.keyword }}</strong></td>
                                         <td>
@@ -301,6 +301,9 @@
 
 <!-- ApexCharts -->
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<!-- Moment.js (required for moment-jalaali) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 
 <!-- جلالی -->
 <script src="https://cdn.jsdelivr.net/npm/moment-jalaali@0.9.6/moment-jalaali.min.js"></script>
