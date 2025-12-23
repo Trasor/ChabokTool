@@ -4,6 +4,24 @@
 
 {% block title %}{{ project.project_name }} - جزئیات پروژه{% endblock %}
 
+{% block extra_css %}
+<style>
+/* استایل سفارشی برای چک‌باکس‌ها */
+input[type="checkbox"].keyword-checkbox,
+input[type="checkbox"]#selectAll {
+    appearance: auto !important;
+    -webkit-appearance: checkbox !important;
+    -moz-appearance: checkbox !important;
+    width: 18px !important;
+    height: 18px !important;
+    cursor: pointer !important;
+    position: relative !important;
+    margin: 0 !important;
+    pointer-events: auto !important;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
     <!-- هدر پروژه -->
@@ -383,7 +401,30 @@ function showChart(keywordId, keywordText) {
 
             // تبدیل تاریخ‌ها به فارسی
             const persianDates = data.dates.map(date => {
-                return moment(date, 'YYYY-MM-DD').format('jYYYY/jMM/jDD');
+                try {
+                    // استفاده از moment-jalaali برای تبدیل
+                    const m = moment(date, 'YYYY-MM-DD');
+                    return m.format('jYYYY/jMM/jDD');
+                } catch (e) {
+                    console.error('Error converting date:', e);
+                    return date; // اگر خطا داد، تاریخ اصلی رو برگردون
+                }
+            });
+
+            // محاسبه min و max برای auto-zoom
+            const validRanks = data.ranks.filter(r => r !== null && r !== undefined);
+            const minRank = Math.min(...validRanks);
+            const maxRank = Math.max(...validRanks);
+
+            // یک کمی padding اضافه کنیم (10% از range)
+            const rankRange = maxRank - minRank;
+            const padding = Math.max(1, Math.floor(rankRange * 0.1));
+            const yMin = Math.max(1, minRank - padding);
+            const yMax = maxRank + padding;
+
+            console.log('Chart config:', {
+                minRank, maxRank, yMin, yMax,
+                persianDates: persianDates.slice(0, 3) + '...'
             });
 
             const options = {
@@ -414,8 +455,13 @@ function showChart(keywordId, keywordText) {
                     title: {
                         text: 'رتبه'
                     },
-                    min: 1,
-                    max: 100
+                    min: yMin,
+                    max: yMax,
+                    labels: {
+                        formatter: function(value) {
+                            return Math.round(value);
+                        }
+                    }
                 },
                 markers: {
                     size: 5
