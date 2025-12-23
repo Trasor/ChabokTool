@@ -18,6 +18,16 @@ input[type="checkbox"]#selectAll {
     position: relative !important;
     margin: 0 !important;
     pointer-events: auto !important;
+    z-index: 999 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* اطمینان از اینکه td روی checkbox تاثیر نگذاره */
+#keywordsTable tbody tr td:first-child {
+    position: relative !important;
+    padding: 0.75rem !important;
+    z-index: 1 !important;
 }
 </style>
 {% endblock %}
@@ -404,7 +414,13 @@ function showChart(keywordId, keywordText) {
                 try {
                     // استفاده از moment-jalaali برای تبدیل
                     const m = moment(date, 'YYYY-MM-DD');
-                    return m.format('jYYYY/jMM/jDD');
+                    // تنظیم locale به Farsi
+                    m.locale('fa');
+                    // استفاده از jYear, jMonth, jDate بجای jYYYY
+                    const jYear = m.jYear();
+                    const jMonth = String(m.jMonth() + 1).padStart(2, '0'); // jMonth از 0 شروع میشه
+                    const jDate = String(m.jDate()).padStart(2, '0');
+                    return `${jYear}/${jMonth}/${jDate}`;
                 } catch (e) {
                     console.error('Error converting date:', e);
                     return date; // اگر خطا داد، تاریخ اصلی رو برگردون
