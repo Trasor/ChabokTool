@@ -11,6 +11,7 @@ import pandas as pd
 import openpyxl
 from openpyxl.styles import Font
 import logging
+from jdatetime import datetime as jdatetime
 
 logger = logging.getLogger(__name__)
 
@@ -321,9 +322,20 @@ def keyword_history_api(request, keyword_id):
     # دریافت تاریخچه
     history = keyword.history.order_by('checked_at').all()[:30]  # آخرین 30 رکورد
 
+    # تبدیل تاریخ‌های میلادی به شمسی
+    jalali_dates = []
+    for h in history:
+        try:
+            # تبدیل به تاریخ جلالی
+            j_date = jdatetime.fromgregorian(datetime=h.checked_at)
+            jalali_dates.append(j_date.strftime('%Y/%m/%d'))
+        except Exception as e:
+            logger.error(f"Error converting date to Jalali: {e}")
+            jalali_dates.append(h.checked_at.strftime('%Y-%m-%d'))
+
     data = {
         'keyword': keyword.keyword,
-        'dates': [h.checked_at.strftime('%Y-%m-%d') for h in history],
+        'dates': jalali_dates,
         'ranks': [h.rank if h.rank else None for h in history]
     }
 

@@ -12,21 +12,38 @@ input[type="checkbox"]#selectAll {
     appearance: auto !important;
     -webkit-appearance: checkbox !important;
     -moz-appearance: checkbox !important;
-    width: 18px !important;
-    height: 18px !important;
+    width: 20px !important;
+    height: 20px !important;
     cursor: pointer !important;
     position: relative !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
+    display: block !important;
     pointer-events: auto !important;
     z-index: 999 !important;
     opacity: 1 !important;
     visibility: visible !important;
+    border: 2px solid #333 !important;
+    accent-color: #0d6efd !important;
+    background: white !important;
+}
+
+/* Label wrapper */
+label.checkbox-label {
+    cursor: pointer !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0.5rem !important;
 }
 
 /* اطمینان از اینکه td روی checkbox تاثیر نگذاره */
-#keywordsTable tbody tr td:first-child {
+#keywordsTable tbody tr td:first-child,
+#keywordsTable thead tr th:first-child {
     position: relative !important;
-    padding: 0.75rem !important;
+    padding: 0.5rem !important;
+    text-align: center !important;
+    vertical-align: middle !important;
     z-index: 1 !important;
 }
 </style>
@@ -185,9 +202,9 @@ input[type="checkbox"]#selectAll {
                             <table class="table table-striped table-hover" id="keywordsTable">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th style="width: 50px; text-align: center;">
-                                            <label style="cursor: pointer; display: inline-block;">
-                                                <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)" style="cursor: pointer; width: 18px; height: 18px; margin: 0;">
+                                        <th style="width: 50px;">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
                                             </label>
                                         </th>
                                         <th>کلمه کلیدی</th>
@@ -204,9 +221,9 @@ input[type="checkbox"]#selectAll {
                                 <tbody>
                                     {% for keyword in keywords %}
                                     <tr data-keyword-id="{{ keyword.id }}">
-                                        <td style="text-align: center;">
-                                            <label style="cursor: pointer; display: inline-block;">
-                                                <input type="checkbox" class="keyword-checkbox" value="{{ keyword.id }}" style="cursor: pointer; width: 18px; height: 18px; margin: 0;">
+                                        <td>
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" class="keyword-checkbox" value="{{ keyword.id }}">
                                             </label>
                                         </td>
                                         <td><strong>{{ keyword.keyword }}</strong></td>
@@ -334,12 +351,6 @@ input[type="checkbox"]#selectAll {
 <!-- ApexCharts -->
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-<!-- Moment.js (required for moment-jalaali) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-
-<!-- جلالی -->
-<script src="https://cdn.jsdelivr.net/npm/moment-jalaali@0.9.6/moment-jalaali.min.js"></script>
-
 <script>
 let chartInstance = null;
 
@@ -413,32 +424,8 @@ function showChart(keywordId, keywordText) {
                 chartInstance.destroy();
             }
 
-            // تبدیل تاریخ‌ها به فارسی با jdatetime
-            const persianDates = data.dates.map(date => {
-                try {
-                    // Parse تاریخ میلادی
-                    const parts = date.split('-');
-                    const year = parseInt(parts[0]);
-                    const month = parseInt(parts[1]);
-                    const day = parseInt(parts[2]);
-
-                    // تبدیل به جلالی با استفاده از moment-jalaali
-                    const gregorianDate = new Date(year, month - 1, day);
-                    const m = moment(gregorianDate);
-
-                    // دریافت تاریخ جلالی
-                    const jYear = m.jYear();
-                    const jMonth = m.jMonth() + 1; // jMonth از 0 شروع میشه
-                    const jDate = m.jDate();
-
-                    console.log(`Converting ${date} to Jalali: ${jYear}/${jMonth}/${jDate}`);
-
-                    return `${jYear}/${jMonth}/${jDate}`;
-                } catch (e) {
-                    console.error('Error converting date:', date, e);
-                    return date;
-                }
-            });
+            // تاریخ‌ها از backend به صورت جلالی می‌آیند
+            console.log('Persian dates from backend:', data.dates);
 
             // محاسبه min و max برای auto-zoom
             const validRanks = data.ranks.filter(r => r !== null && r !== undefined);
@@ -453,7 +440,9 @@ function showChart(keywordId, keywordText) {
 
             console.log('Chart config:', {
                 minRank, maxRank, yMin, yMax,
-                persianDates: persianDates.slice(0, 3) + '...'
+                dateCount: data.dates.length,
+                firstDate: data.dates[0],
+                lastDate: data.dates[data.dates.length - 1]
             });
 
             const options = {
@@ -474,7 +463,7 @@ function showChart(keywordId, keywordText) {
                     width: 3
                 },
                 xaxis: {
-                    categories: persianDates,
+                    categories: data.dates,
                     title: {
                         text: 'تاریخ (شمسی)'
                     }
