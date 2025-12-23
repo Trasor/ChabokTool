@@ -186,7 +186,9 @@ input[type="checkbox"]#selectAll {
                                 <thead class="table-dark">
                                     <tr>
                                         <th style="width: 50px; text-align: center;">
-                                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)" style="cursor: pointer; width: 18px; height: 18px; border: 2px solid #333; accent-color: #0d6efd;">
+                                            <label style="cursor: pointer; display: inline-block;">
+                                                <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)" style="cursor: pointer; width: 18px; height: 18px; margin: 0;">
+                                            </label>
                                         </th>
                                         <th>کلمه کلیدی</th>
                                         <th>رتبه فعلی</th>
@@ -203,7 +205,9 @@ input[type="checkbox"]#selectAll {
                                     {% for keyword in keywords %}
                                     <tr data-keyword-id="{{ keyword.id }}">
                                         <td style="text-align: center;">
-                                            <input type="checkbox" class="keyword-checkbox" value="{{ keyword.id }}" style="cursor: pointer; width: 18px; height: 18px; border: 2px solid #333; accent-color: #0d6efd;">
+                                            <label style="cursor: pointer; display: inline-block;">
+                                                <input type="checkbox" class="keyword-checkbox" value="{{ keyword.id }}" style="cursor: pointer; width: 18px; height: 18px; margin: 0;">
+                                            </label>
                                         </td>
                                         <td><strong>{{ keyword.keyword }}</strong></td>
                                         <td>
@@ -409,21 +413,30 @@ function showChart(keywordId, keywordText) {
                 chartInstance.destroy();
             }
 
-            // تبدیل تاریخ‌ها به فارسی
+            // تبدیل تاریخ‌ها به فارسی با jdatetime
             const persianDates = data.dates.map(date => {
                 try {
-                    // استفاده از moment-jalaali برای تبدیل
-                    const m = moment(date, 'YYYY-MM-DD');
-                    // تنظیم locale به Farsi
-                    m.locale('fa');
-                    // استفاده از jYear, jMonth, jDate بجای jYYYY
+                    // Parse تاریخ میلادی
+                    const parts = date.split('-');
+                    const year = parseInt(parts[0]);
+                    const month = parseInt(parts[1]);
+                    const day = parseInt(parts[2]);
+
+                    // تبدیل به جلالی با استفاده از moment-jalaali
+                    const gregorianDate = new Date(year, month - 1, day);
+                    const m = moment(gregorianDate);
+
+                    // دریافت تاریخ جلالی
                     const jYear = m.jYear();
-                    const jMonth = String(m.jMonth() + 1).padStart(2, '0'); // jMonth از 0 شروع میشه
-                    const jDate = String(m.jDate()).padStart(2, '0');
+                    const jMonth = m.jMonth() + 1; // jMonth از 0 شروع میشه
+                    const jDate = m.jDate();
+
+                    console.log(`Converting ${date} to Jalali: ${jYear}/${jMonth}/${jDate}`);
+
                     return `${jYear}/${jMonth}/${jDate}`;
                 } catch (e) {
-                    console.error('Error converting date:', e);
-                    return date; // اگر خطا داد، تاریخ اصلی رو برگردون
+                    console.error('Error converting date:', date, e);
+                    return date;
                 }
             });
 
